@@ -17,7 +17,7 @@ One Claude skill that combines three open-source trading projects into a single,
 Needs Python 3.11+ and [Claude Code](https://claude.com/claude-code).
 
 ```bash
-git clone https://github.com/OWNER/ultimate-trader.git
+git clone https://github.com/Kafish69/ultimate-trader.git
 cd ultimate-trader
 python install.py
 python scripts/doctor.py
