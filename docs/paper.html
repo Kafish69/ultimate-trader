@@ -49,7 +49,6 @@ th{color:var(--mute);font-weight:500}
     <label>Starting cash ($)<input id="startcash" type="number" min="5" step="1" value="60"></label>
     <label>Max loss per trade ($)<input id="maxloss" type="number" min="0.1" step="0.1" value="2"></label>
     <button id="apply">Start with this cash</button>
-    <label class="gap" style="flex-direction:row;align-items:center;gap:8px;color:var(--ink)"><input id="auto" type="checkbox" style="width:auto"> Let the skills trade for me</label>
   </div>
   <div class="top">
     <span>Cash<b id="cash">$60.00</b></span>
@@ -72,12 +71,20 @@ th{color:var(--mute);font-weight:500}
   <p class="fine" id="size"></p>
 </div>
 
+<div class="card" id="vs">
+  <strong>You against the skills</strong>
+  <p class="fine" style="margin-top:2px">The skills have their own account with the same cash on the same chart. They trade by themselves from the first candle, no clicks, no hindsight. Press Play and watch.</p>
+  <table id="cmp"></table>
+  <strong style="display:block;margin-top:14px">What the skills did, newest first</strong>
+  <div id="blog" style="font:13px var(--mono);max-height:190px;overflow:auto;margin-top:6px"></div>
+</div>
+
 <div class="card" id="adv">
-  <strong>What the skills say right now</strong>
+  <strong>What the skills say right now (for your trade)</strong>
   <div id="verdict" style="font-size:20px;font-weight:700;margin:8px 0"></div>
   <table id="skills"></table>
   <div class="bar"><button class="buy" id="take" disabled>Take the skills' trade</button></div>
-  <p class="fine">Each row is a simple version of the real skill, run on this chart: Scanner, Entry timer (15-minute opening range breakout), Exit planner (stop at the range midpoint, target at 2R), Time Machine (2,000 simulated finishes), Budget, Risk and Alerts. Turn on "Let the skills trade for me" and they buy and manage the trade by themselves. They never trade outside the rules, and you can switch it off any time.</p>
+  <p class="fine">Each row is a simple version of the real skill, run on this chart: Scanner, Entry timer (15-minute opening range breakout), Exit planner (stop at the range midpoint, target at 2R), Time Machine (2,000 simulated finishes), Budget, Risk and Alerts. The skills use this same logic in their own account above, so they never trade outside the rules.</p>
 </div>
 
 <div class="card">
@@ -107,9 +114,9 @@ function clock(k){var m=9*60+30+(k-HIST)*5,h=Math.floor(m/60),mm=m%60;return h+'
 function money(v){return (v<0?'-':'+')+'$'+Math.abs(v).toFixed(2)}
 function reset(){
   clearInterval(timer);timer=null;$('#play').textContent='Play';
-  D=gen(SEED);i=HIST;touched=false;cash=START;pos=null;day=0;trades=[];
+  D=gen(SEED);i=HIST;touched=false;botNew();cash=START;pos=null;day=0;trades=[];
   var c=D[i].c;$('#stop').value=(c*0.996).toFixed(2);$('#tgt').value=(c*1.008).toFixed(2);
-  $('#msg').textContent='Day '+(SEED-10)+'. The chart shows the last 36 candles. Press Next candle to move time forward.';
+  $('#msg').textContent='Day '+(SEED-10)+'. The chart shows the last 36 candles. Press Next candle or Play. The skills will trade by themselves in their own account.';
   draw();
 }
 function bounds(){var a=Math.max(0,i-60),sl=D.slice(a,i+1),lo=1e9,hi=-1e9;
@@ -135,6 +142,8 @@ function draw(){
       s+='<line x1="'+l+'" x2="'+(W-r)+'" y1="'+Y(x[0])+'" y2="'+Y(x[0])+'" stroke="'+x[1]+'" stroke-width="1.4" stroke-dasharray="6 4"/><text x="'+(l+4)+'" y="'+(Y(x[0])-4)+'" style="fill:'+x[1]+'">'+x[2]+'</text>'});
     var ek=pos.k-B.a;if(ek>=0)s+='<path d="M'+(l+ek*cw+cw/2)+' '+(Y(pos.entry)-2)+' l-6 11 h12z" fill="var(--steel)"/>';
   }
+  BOT.marks.forEach(function(m){var k=m.k-B.a;if(k<0||k>=B.sl.length)return;var x=l+k*cw+cw/2,y=Y(m.p);
+    s+='<circle cx="'+x+'" cy="'+y+'" r="6" fill="var(--amber)" stroke="var(--paper)" stroke-width="1.5"/><text x="'+x+'" y="'+(m.t==='buy'?y+19:y-10)+'" text-anchor="middle" style="fill:var(--amber)">skills '+m.t+'</text>'});
   [0,12,24,36,48,60].forEach(function(k){if(k<B.sl.length)s+='<text x="'+(l+k*cw+cw/2)+'" y="'+(H-3)+'" text-anchor="middle">'+clock(B.a+k)+'</text>'});
   $('#ch').innerHTML=s;
   var op=pos?pos.q*(cur.c-pos.entry):0;
@@ -146,10 +155,21 @@ function draw(){
   $('#next').disabled=over;$('#play').disabled=over;
   var mins=9*60+30+(i-HIST)*5,canBuy=!pos&&!over&&mins>=9*60+45&&mins<=15*60;
   $('#buy').disabled=!canBuy;$('#close').disabled=!pos;
-  plan();advise();
+  plan();advise();vs();
   var rows='<tr><th>Time</th><th>Shares</th><th>In</th><th>Out</th><th>Why</th><th>P/L</th></tr>';
   trades.forEach(function(x){rows+='<tr><td>'+x.t+'</td><td>'+x.q+'</td><td>'+x.a.toFixed(2)+'</td><td>'+x.b.toFixed(2)+'</td><td>'+x.w+'</td><td class="'+(x.p>0?'up':'down')+'">'+money(x.p)+'</td></tr>'});
   $('#log').innerHTML=rows;
+}
+function vs(){
+  var b=BOT,bo=b.pos?b.pos.q*(D[i].c-b.pos.entry):0,mo=pos?pos.q*(D[i].c-pos.entry):0;
+  var mt=day+mo,bt=b.day+bo,eq=function(c,p){return c+(p?p.q*D[i].c:0)};
+  var cl=function(v){return v>0.004?'up':v<-0.004?'down':''};
+  $('#cmp').innerHTML='<tr><th></th><th>You</th><th>Skills</th></tr>'+
+   '<tr><td>Account value</td><td>$'+eq(cash,pos).toFixed(2)+'</td><td>$'+eq(b.cash,b.pos).toFixed(2)+'</td></tr>'+
+   '<tr><td>Day P/L (open + closed)</td><td class="'+cl(mt)+'">'+money(mt)+'</td><td class="'+cl(bt)+'">'+money(bt)+'</td></tr>'+
+   '<tr><td>Trades taken</td><td>'+(trades.length+(pos?1:0))+'</td><td>'+(b.trades.length+(b.pos?1:0))+'</td></tr>'+
+   '<tr><td>Now</td><td>'+(pos?'in a trade':'flat')+'</td><td>'+(b.pos?'in a trade':'flat')+'</td></tr>';
+  $('#blog').innerHTML=b.log.length?b.log.map(function(t){return '<div style="padding:3px 0;border-bottom:1px solid var(--rule)">'+t+'</div>'}).join(''):'Nothing yet. Press Next candle or Play.';
 }
 function plan(){
   var c=D[i].c,st=parseFloat($('#stop').value),tg=parseFloat($('#tgt').value),m='';
@@ -165,18 +185,42 @@ function finish(price,why){
   $('#msg').innerHTML='Closed by '+why+' at $'+price.toFixed(2)+': <b class="'+(p>0?'up':'down')+'">'+money(p)+'</b> after fees.';
   pos=null;
 }
+function manage(){
+  var b=D[i];
+  if(!pos)return;
+  if(b.o<=pos.stop)finish(b.o,'stop (gap)');
+  else if(b.l<=pos.stop)finish(pos.stop,'stop');
+  else if(b.o>=pos.tgt)finish(b.o,'target (gap)');
+  else if(b.h>=pos.tgt)finish(pos.tgt,'target');
+  else if(clock(i)==='15:55'||i>=D.length-1)finish(b.c,i>=D.length-1?'end of day':'flat by 15:55');
+}
+/* the skills' own account: same chart, same rules, runs by itself */
+var BOT;
+function botNew(){BOT={cash:START,pos:null,day:0,trades:[],log:[],marks:[],last:'',seen:{}}}
+function botSay(t){BOT.log.unshift(clock(i)+'  '+t);if(BOT.log.length>60)BOT.log.pop()}
+function botTick(){
+  var sv={pos:pos,day:day,trades:trades,cash:cash},m=$('#msg').innerHTML;
+  pos=BOT.pos;day=BOT.day;trades=BOT.trades;cash=BOT.cash;
+  var n0=trades.length,had=!!pos;
+  manage();
+  if(had&&!pos){var x=trades[trades.length-1];BOT.marks.push({k:i,p:x.b,t:'sell'});botSay('Sold '+x.q+' at $'+x.b.toFixed(2)+' ('+x.w+'): '+money(x.p)+'.')}
+  var A=compute();
+  if(A.go){
+    pos={q:A.q,entry:A.entry,stop:A.stop,tgt:A.tgt,k:i};cash-=A.q*A.entry;
+    BOT.marks.push({k:i,p:A.entry,t:'buy'});
+    botSay('TAKE. Breakout confirmed, odds positive, risk passed. Bought '+A.q+' at $'+A.entry.toFixed(2)+', stop $'+A.stop.toFixed(2)+', target $'+A.tgt.toFixed(2)+'.');
+    BOT.last='';
+  }else if(!pos&&A.why!==BOT.last){BOT.last=A.why;if(!(BOT.seen[A.why]>=0&&i-BOT.seen[A.why]<12)){BOT.seen[A.why]=i;botSay((A.wait&&A.ok?'WAIT. ':'SKIP. ')+A.why)}}
+  BOT.pos=pos;BOT.day=day;BOT.trades=trades;BOT.cash=cash;
+  pos=sv.pos;day=sv.day;trades=sv.trades;cash=sv.cash;$('#msg').innerHTML=m;
+}
 function step(){
   if(i>=D.length-1){stop();return}
   i++;var b=D[i];
   if(!pos&&!touched){$('#stop').value=(b.c*0.996).toFixed(2);$('#tgt').value=(b.c*1.008).toFixed(2)}
-  if(pos){
-    if(b.o<=pos.stop)finish(b.o,'stop (gap)');
-    else if(b.l<=pos.stop)finish(pos.stop,'stop');
-    else if(b.o>=pos.tgt)finish(b.o,'target (gap)');
-    else if(b.h>=pos.tgt)finish(pos.tgt,'target');
-    else if(clock(i)==='15:55'){finish(b.c,'flat by 15:55')}
-  }
-  if(i>=D.length-1){stop();if(pos)finish(D[i].c,'end of day');$('#msg').innerHTML+=' Session over. Day result: <b class="'+(day>0?'up':'down')+'">'+money(day)+'</b>. Press New day.'}
+  manage();
+  botTick();
+  if(i>=D.length-1){stop();$('#msg').innerHTML=($('#msg').innerHTML||'')+' Session over. Press New day.'}
   draw();
 }
 function stop(){clearInterval(timer);timer=null;$('#play').textContent='Play'}
@@ -200,7 +244,7 @@ $('#stop').oninput=$('#tgt').oninput=function(){touched=true;plan()};
 /* the skills */
 var AD=null;
 function sd(a){var m=a.reduce(function(x,y){return x+y},0)/a.length;return Math.sqrt(a.reduce(function(x,y){return x+(y-m)*(y-m)},0)/a.length)}
-function advise(){
+function compute(){
   var c=D[i].c,mins=9*60+30+(i-HIST)*5,rows=[],ok=true,wait=false,why='';
   var row=function(n,st,tx){rows.push('<tr><td>'+n+'</td><td class="'+(st==='ok'?'up':st==='no'?'down':'')+'"><b>'+(st==='ok'?'Pass':st==='no'?'Fail':'Wait')+'</b></td><td style="font-family:var(--text)">'+tx+'</td></tr>')};
   AD=null;
@@ -244,15 +288,19 @@ function advise(){
   if(g.length&&!pos){ok=false;if(!why)why=g[0].charAt(0).toUpperCase()+g[0].slice(1)+'.'}
   var al=pos?'Watching your trade: stop $'+pos.stop.toFixed(2)+' ($'+(D[i].c-pos.stop).toFixed(2)+' below), target $'+pos.tgt.toFixed(2)+' ($'+(pos.tgt-D[i].c).toFixed(2)+' above). Flat by 15:55.':'Will watch the stop, the target and the 15:55 close once you are in a trade.';
   row('Alerts',pos?'ok':'wait',al);
-  $('#skills').innerHTML='<tr><th>Skill</th><th>Result</th><th>Why</th></tr>'+rows.join('');
   var go=ok&&!wait&&!pos&&q>0&&i<D.length-1;
+  return {rows:rows,ok:ok,wait:wait,why:why,go:go,stop:stop,tgt:tgt,q:q,entry:entry};
+}
+function advise(){
+  var A=compute(),rows=A.rows,ok=A.ok,wait=A.wait,why=A.why,go=A.go,stop=A.stop,tgt=A.tgt;
+  AD=null;
+  $('#skills').innerHTML='<tr><th>Skill</th><th>Result</th><th>Why</th></tr>'+rows.join('');
   var v=$('#verdict');
   if(pos){v.textContent='In a trade. The skills are watching it.';v.className=''}
   else if(go){v.textContent='TAKE the trade now';v.className='up';AD={stop:stop,tgt:tgt}}
   else if(wait&&ok){v.textContent='WAIT. '+why;v.className=''}
   else{v.textContent='SKIP. '+why;v.className='down'}
   $('#take').disabled=!go;
-  if(go&&auto)takeAdvice(true);
 }
 function takeAdvice(byAuto){
   if(!AD||pos)return;
@@ -261,7 +309,6 @@ function takeAdvice(byAuto){
   if(pos&&byAuto)$('#msg').textContent='Skills bought. '+$('#msg').textContent;
 }
 $('#take').onclick=function(){takeAdvice(false)};
-$('#auto').onchange=function(){auto=this.checked;if(auto)advise()};
 $('#apply').onclick=function(){
   var c=parseFloat($('#startcash').value),m=parseFloat($('#maxloss').value);
   if(!(c>=5)){$('#msg').textContent='Starting cash must be at least $5.';return}
