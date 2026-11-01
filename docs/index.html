@@ -119,6 +119,19 @@ section .intro p{margin-top:12px;color:var(--mute);max-width:60ch}
 .detail dd{margin:0}
 
 /* lab */
+.tradebox{background:var(--panel);border:1px solid var(--rule);border-radius:3px;padding:20px;margin-top:20px;min-width:0}
+.tbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-bottom:12px}
+.tbar button{font:600 14px var(--text);background:var(--steel);color:var(--on-steel);border:0;border-radius:3px;padding:9px 16px;cursor:pointer}
+.tbar button+button{background:transparent;color:var(--ink);border:1px solid var(--rule)}
+.tbar button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.tstat{font:500 14px var(--mono);color:var(--mute);margin-left:auto}
+.tstat b{color:var(--ink)}
+.tradebox svg{display:block;width:100%;height:auto}
+.tradebox text{font:11px var(--mono);fill:var(--mute)}
+.tradebox .ghost{fill:none;stroke:var(--mute);stroke-opacity:.18;stroke-width:1}
+.tradebox .main{fill:none;stroke:var(--ink);stroke-width:2.2;stroke-linejoin:round}
+.tradebox .gl{stroke-width:1.2;stroke-dasharray:5 4}
+.tradebox .plc{fill:none;stroke-width:2;stroke-linejoin:round}
 .lab{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px}
 .fields{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 label{display:grid;gap:5px;font-size:14px;color:var(--mute)}
@@ -258,6 +271,18 @@ footer strong{color:var(--ink)}
     <div><div class="fields" id="simfields"></div>
       <p class="fine">The 10,000 sessions here are a random walk, not the real Time Machine. The real one replays the stock's own recent 5-minute bars on your computer (/trader-timemachine). Use this to feel the shape of the odds, then run the real one.</p></div>
     <div class="out" id="simout"></div>
+  </div>
+
+  <div class="intro" style="margin-top:64px"><h2>Watch one trade play out</h2><p>This is a paper trade with fake money. The chart plays one session in 5-minute steps from your entry. It ends when the price touches your stop or your target, or at the close. The faint lines are 40 other ways the same day could have gone.</p></div>
+  <div class="tradebox" id="tradebox">
+    <div class="tbar">
+      <button type="button" id="tnew">New session</button>
+      <button type="button" id="treplay">Replay</button>
+      <span class="tstat" id="tstat" aria-live="polite"></span>
+    </div>
+    <svg id="tprice" viewBox="0 0 720 300" role="img" aria-label="Price chart of one simulated session with entry, stop and target lines"></svg>
+    <svg id="tpl" viewBox="0 0 720 130" role="img" aria-label="Profit and loss in dollars during the same session"></svg>
+    <p class="fine" id="tnote"></p>
   </div>
 </div></section>
 
@@ -458,6 +483,73 @@ function sim(){
    '<div class="histlab"><span>'+money(lo)+'</span><span>result per session</span><span>'+money(hi)+'</span></div>'+
    '<p class="fine">A simulation with the same seed every time, so a refresh gives the same numbers. It assumes the stop and target fill exactly at their prices. Not financial advice.</p>';
 }
+/* one trade, drawn */
+var TS=7,TAN=0;
+function walk(seed,L,sig){
+  var R=rng(seed),p=L.entry,pts=[p],why='close';
+  for(var b=0;b<78;b++){
+    var u=R()||1e-9,v=R(),z=Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);
+    p+=sig*z;
+    if(p<=L.stop){p=L.stop;pts.push(p);why='stop';break}
+    if(p>=L.target){p=L.target;pts.push(p);why='target';break}
+    pts.push(p);
+  }
+  return {pts:pts,why:why};
+}
+function clock(i){var m=9*60+30+i*5,h=Math.floor(m/60),mm=m%60;return h+':'+(mm<10?'0':'')+mm}
+function drawTrade(upto){
+  var L=LAST,g=function(id){return parseFloat($('#'+id).value)||0};
+  var P=$('#tprice'),Q=$('#tpl'),st=$('#tstat'),nt=$('#tnote');
+  if(!(L.q>0)||L.entry-L.stop<=0||L.target-L.entry<=0){P.innerHTML='';Q.innerHTML='';st.textContent='';nt.textContent='Size a valid trade above first.';return}
+  var cost=g('cost'),dm=g('dmove'),sig=L.entry*dm/100/Math.sqrt(78);
+  var main=walk(TS,L,sig),ghosts=[];
+  for(var k=1;k<=40;k++)ghosts.push(walk(TS*100+k,L,sig).pts);
+  var all=main.pts.concat.apply([],ghosts).concat([L.stop,L.target,L.entry]);
+  var lo=Math.min.apply(null,all),hi=Math.max.apply(null,all),pad=(hi-lo)*.06||.1;lo-=pad;hi+=pad;
+  var W=720,H=300,l=52,r=14,t=12,b=26,X=function(i){return l+(W-l-r)*i/78},Y=function(v){return t+(H-t-b)*(1-(v-lo)/(hi-lo))};
+  var path=function(a,n){var s='';for(var i=0;i<Math.min(a.length,n+1);i++)s+=(i?'L':'M')+X(i).toFixed(1)+' '+Y(a[i]).toFixed(1);return s};
+  var n=Math.min(upto,main.pts.length-1),last=main.pts[n],done=n>=main.pts.length-1;
+  var s='';
+  s+='<rect x="'+l+'" y="'+Y(L.target)+'" width="'+(W-l-r)+'" height="'+(Y(L.entry)-Y(L.target))+'" fill="var(--go)" fill-opacity=".07"/>';
+  s+='<rect x="'+l+'" y="'+Y(L.entry)+'" width="'+(W-l-r)+'" height="'+(Y(L.stop)-Y(L.entry))+'" fill="var(--stop)" fill-opacity=".07"/>';
+  [[L.target,'var(--go)','target'],[L.entry,'var(--steel)','entry'],[L.stop,'var(--stop)','stop']].forEach(function(x){
+    s+='<line class="gl" x1="'+l+'" x2="'+(W-r)+'" y1="'+Y(x[0])+'" y2="'+Y(x[0])+'" stroke="'+x[1]+'"/>';
+    s+='<text x="'+(l-6)+'" y="'+(Y(x[0])+4)+'" text-anchor="end">'+x[0].toFixed(2)+'</text>';
+    s+='<text x="'+(W-r-4)+'" y="'+(Y(x[0])-5)+'" text-anchor="end" style="fill:'+x[1]+'">'+x[2]+'</text>';
+  });
+  ghosts.forEach(function(a){s+='<path class="ghost" d="'+path(a,78)+'"/>'});
+  s+='<path class="main" d="'+path(main.pts,n)+'"/>';
+  s+='<circle cx="'+X(0)+'" cy="'+Y(L.entry)+'" r="4.5" fill="var(--steel)"/>';
+  s+='<circle cx="'+X(n)+'" cy="'+Y(last)+'" r="5" fill="'+(done?(main.why==='target'?'var(--go)':main.why==='stop'?'var(--stop)':'var(--amber)'):'var(--ink)')+'"/>';
+  [0,26,52,78].forEach(function(i){s+='<text x="'+X(i)+'" y="'+(H-8)+'" text-anchor="middle">'+clock(i)+'</text>'});
+  P.innerHTML=s;
+  var pl=main.pts.map(function(p){return L.q*(p-L.entry)});
+  var ex=L.q*(L.stop-L.entry),ey=L.q*(L.target-L.entry),H2=130,t2=10,b2=10;
+  var Y2=function(v){return t2+(H2-t2-b2)*(1-(v-ex)/(ey-ex))};
+  var q='<line x1="'+l+'" x2="'+(W-r)+'" y1="'+Y2(0)+'" y2="'+Y2(0)+'" stroke="var(--rule)"/>';
+  q+='<text x="'+(l-6)+'" y="'+(Y2(ey)+4)+'" text-anchor="end">+$'+ey.toFixed(2)+'</text>';
+  q+='<text x="'+(l-6)+'" y="'+(Y2(0)+4)+'" text-anchor="end">$0</text>';
+  q+='<text x="'+(l-6)+'" y="'+(Y2(ex)+4)+'" text-anchor="end">-$'+Math.abs(ex).toFixed(2)+'</text>';
+  var d='';for(var i=0;i<=n;i++)d+=(i?'L':'M')+X(i).toFixed(1)+' '+Y2(pl[i]).toFixed(1);
+  var cur=pl[n]-(done?cost:0);
+  q+='<path class="plc" d="'+d+'" stroke="'+(cur>=0?'var(--go)':'var(--stop)')+'"/>';
+  q+='<circle cx="'+X(n)+'" cy="'+Y2(pl[n])+'" r="4" fill="'+(cur>=0?'var(--go)':'var(--stop)')+'"/>';
+  Q.innerHTML=q;
+  st.innerHTML=clock(n)+' &nbsp; price <b>$'+last.toFixed(2)+'</b> &nbsp; P/L <b class="pl '+cls(cur)+'">'+money(cur)+'</b>';
+  nt.textContent=done?(main.why==='target'?'The price touched your target, so the trade closed with a profit of '+money(cur)+' after costs.':main.why==='stop'?'The price touched your stop, so the trade closed with a loss of '+money(cur)+' after costs. That is the most this trade can lose, by design.':'Neither level was touched. The trade was closed at the close of the session for '+money(cur)+' after costs.')+' Session '+TS+'. Press New session to try another day.':'Playing the session...';
+}
+function playTrade(){
+  cancelAnimationFrame(TAN);
+  var L=LAST;if(!(L.q>0)){drawTrade(0);return}
+  var reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduce){drawTrade(78);return}
+  var i=0,tick=function(){drawTrade(i);if(i<78){i++;TAN=requestAnimationFrame(function(){setTimeout(tick,45)})}};
+  tick();
+}
+$('#tnew').addEventListener('click',function(){TS++;playTrade()});
+$('#treplay').addEventListener('click',playTrade);
+var _sim=sim;
+sim=function(){_sim();drawTrade(78)};
 $('.lab').addEventListener('input',calc);$('.lab').addEventListener('change',calc);
 $('#sim').addEventListener('input',sim);$('#sim').addEventListener('change',sim);
 calc();
