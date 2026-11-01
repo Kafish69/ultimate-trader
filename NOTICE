@@ -1,0 +1,13 @@
+Ultimate Trader bundles or installs the following third-party work.
+
+skills/trader-*            Day Trader skill, MIT, Jake Schincariol
+                           https://github.com/Jakeschincariol/day-trader-skill
+                           tests/ are adapted from its test suite.
+skills/ultimate-trader/references/vibe-skills
+                           Vibe-Trading skill library, MIT, HKUDS
+                           https://github.com/HKUDS/Vibe-Trading
+vibe-trading-ai (PyPI)     MIT, HKUDS. Installed, not vendored.
+tradingagents (PyPI)       Apache-2.0, Tauric Research. Installed, not vendored.
+                           https://github.com/TauricResearch/TradingAgents
+
+Full license texts: third_party/. Not affiliated with or endorsed by the authors above.

@@ -1,0 +1,30 @@
+name: ci
+on:
+  push:
+  pull_request:
+jobs:
+  structure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Every skill has valid frontmatter
+        run: python scripts/check_skills.py
+      - name: Scripts compile
+        run: python -m py_compile install.py scripts/doctor.py scripts/check_skills.py
+      - name: Day Trader tool tests (offline fixtures)
+        run: python -m unittest discover -s tests -v
+        continue-on-error: false
+  skills-install:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python install.py --skills

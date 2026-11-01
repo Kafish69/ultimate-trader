@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+trader/
+.env
+.env.*
+*.bak-ultimate-trader
+.venv/
+trading-venv-*/

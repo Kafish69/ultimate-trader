@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ultimate Trader</title>
+<meta name="description" content="One Claude skill that combines TradingAgents, Vibe-Trading and the Day Trader pack into a gated research, size, risk and approve workflow. Paper first.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;800&family=Sora:wght@400;600;800&display=swap">
+<style>
+/* Layout: a dark glass desk. Aurora glow behind a sticky nav, hero with a live price path, then sections as glass panels. */
+:root{
+  --bg:#f3f5fb; --bg2:#e7ebf6; --ink:#0d1226; --mute:#56607f; --line:#d5dbee;
+  --glass:rgba(255,255,255,.72); --glass-line:rgba(120,130,190,.28);
+  --a:#00a870; --a2:#6d4aff; --a3:#e0245e; --a-ink:#ffffff; --chip:#e3e8f6; --code:#eaeefb; --warn:#a15c00;
+  --aur1:rgba(109,74,255,.18); --aur2:rgba(0,168,112,.16);
+  --mono:'JetBrains Mono',ui-monospace,Consolas,monospace; --sans:'Sora',system-ui,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#070a14; --bg2:#0b1020; --ink:#e8ecfb; --mute:#8d97b9; --line:#1b2340;
+  --glass:rgba(16,22,44,.62); --glass-line:rgba(140,150,230,.18);
+  --a:#2ef2a0; --a2:#8b6dff; --a3:#ff4d7d; --a-ink:#04120c; --chip:#161e3a; --code:#0a0f20; --warn:#ffc266;
+  --aur1:rgba(139,109,255,.25); --aur2:rgba(46,242,160,.14); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#070a14; --bg2:#0b1020; --ink:#e8ecfb; --mute:#8d97b9; --line:#1b2340;
+  --glass:rgba(16,22,44,.62); --glass-line:rgba(140,150,230,.18);
+  --a:#2ef2a0; --a2:#8b6dff; --a3:#ff4d7d; --a-ink:#04120c; --chip:#161e3a; --code:#0a0f20; --warn:#ffc266;
+  --aur1:rgba(139,109,255,.25); --aur2:rgba(46,242,160,.14); color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--sans);
+  background-image:radial-gradient(900px 500px at 12% -5%,var(--aur1),transparent 60%),radial-gradient(800px 480px at 95% 8%,var(--aur2),transparent 60%);
+  background-attachment:fixed;padding-left:env(safe-area-inset-left,0);padding-right:env(safe-area-inset-right,0)}
+a{color:var(--a)}
+.w{max-width:1120px;margin:0 auto;padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px))}
+/* nav */
+.nav{position:sticky;top:0;z-index:20;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);background:var(--glass);border-bottom:1px solid var(--glass-line)}
+.nav .w{display:flex;align-items:center;gap:18px;height:58px}
+.logo{font:800 15px var(--mono);letter-spacing:.06em;display:flex;align-items:center;gap:9px;color:var(--ink);text-decoration:none}
+.logo i{width:22px;height:22px;border-radius:6px;background:linear-gradient(135deg,var(--a),var(--a2));display:block;box-shadow:0 0 18px var(--a2)}
+.nav nav{display:flex;gap:4px;margin-left:auto;overflow-x:auto}
+.nav nav a{font:600 12px var(--mono);color:var(--mute);text-decoration:none;padding:8px 10px;border-radius:6px;white-space:nowrap}
+.nav nav a:hover{color:var(--ink);background:var(--chip)}
+.gh{font:600 12px var(--mono);text-decoration:none;color:var(--a-ink);background:var(--a);padding:8px 12px;border-radius:7px;white-space:nowrap}
+/* hero */
+.hero{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:36px;align-items:center;padding-block:64px 40px}
+.pill{display:inline-flex;gap:8px;align-items:center;font:600 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--a);border:1px solid var(--glass-line);background:var(--glass);padding:6px 12px;border-radius:99px}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--a);box-shadow:0 0 10px var(--a)}
+h1{font:800 clamp(34px,6vw,62px)/1.04 var(--sans);letter-spacing:-.03em;margin:18px 0 16px;text-wrap:balance}
+h1 em{font-style:normal;background:linear-gradient(100deg,var(--a),var(--a2) 60%,var(--a3));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:var(--mute);font-size:18px;max-width:52ch;margin:0 0 26px}
+.cmd{display:flex;gap:8px;align-items:stretch;max-width:560px;min-width:0}
+.cmd code{flex:1;min-width:0;overflow-x:auto;white-space:nowrap;font:13px var(--mono);background:var(--code);border:1px solid var(--glass-line);border-radius:9px;padding:12px 14px}
+.cmd button,.btn{cursor:pointer;font:600 12px var(--mono);border:1px solid var(--glass-line);background:var(--glass);color:var(--ink);border-radius:9px;padding:0 14px;min-height:42px}
+.btn.primary{background:linear-gradient(120deg,var(--a),var(--a2));color:var(--a-ink);border:0}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.chart{border:1px solid var(--glass-line);background:var(--glass);border-radius:16px;padding:14px;box-shadow:0 30px 80px -30px var(--aur1)}
+.chart .top{display:flex;justify-content:space-between;font:600 11px var(--mono);color:var(--mute);margin-bottom:8px;gap:8px;flex-wrap:wrap}
+canvas{width:100%;height:230px;display:block}
+.odds{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.odds div{background:var(--code);border-radius:10px;padding:10px;text-align:center;font:600 11px var(--mono);color:var(--mute)}
+.odds b{display:block;font:800 20px var(--mono);color:var(--ink);font-variant-numeric:tabular-nums}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;padding-bottom:20px}
+.tile{border:1px solid var(--glass-line);background:var(--glass);border-radius:14px;padding:16px}
+.tile b{display:block;font:800 26px var(--mono);font-variant-numeric:tabular-nums}
+.tile span{font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+/* sections */
+section{padding-block:56px}
+.kicker{font:600 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--a)}
+h2{font:800 clamp(26px,4vw,38px)/1.1 var(--sans);letter-spacing:-.02em;margin:8px 0 10px;text-wrap:balance}
+.lead{color:var(--mute);max-width:62ch;margin:0 0 28px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.card{border:1px solid var(--glass-line);background:var(--glass);border-radius:16px;padding:22px;min-width:0;display:grid;gap:10px;align-content:start}
+.card h3{margin:0;font:800 18px var(--sans)}
+.card p{margin:0;color:var(--mute);font-size:15px}
+.card ul{margin:0;padding-left:18px;color:var(--mute);font-size:14px}
+.tag{font:600 10px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--a2)}
+.card a.src{font:600 12px var(--mono)}
+/* flow */
+.flow{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.st{all:unset;cursor:pointer;font:600 12px var(--mono);padding:9px 13px;border-radius:9px;background:var(--chip);color:var(--ink);border:1px solid transparent}
+.st:hover{border-color:var(--glass-line)}
+.st[aria-pressed=true]{background:linear-gradient(120deg,var(--a),var(--a2));color:var(--a-ink)}
+.st.gate{border:1px dashed var(--a3)}
+.st:focus-visible,.cmd button:focus-visible,input:focus-visible,select:focus-visible,.nav a:focus-visible,.btn:focus-visible{outline:2px solid var(--a);outline-offset:2px}
+.detail{border:1px solid var(--glass-line);background:var(--glass);border-radius:16px;padding:22px;display:grid;gap:12px}
+.detail h3{margin:0;font:800 20px var(--sans)}
+.kv{display:grid;grid-template-columns:96px minmax(0,1fr);gap:6px 14px;font-size:14px}
+.kv b{font:600 11px var(--mono);color:var(--mute);text-transform:uppercase;letter-spacing:.08em;padding-top:3px}
+/* gates */
+.gates{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;counter-reset:g}
+.gatec{border:1px solid var(--glass-line);background:var(--glass);border-radius:16px;padding:20px;position:relative}
+.gatec::before{counter-increment:g;content:counter(g);position:absolute;top:-12px;left:18px;width:26px;height:26px;border-radius:50%;background:var(--a3);color:#fff;font:800 13px var(--mono);display:grid;place-items:center}
+.gatec h3{margin:6px 0 6px;font:800 16px var(--sans)}
+.gatec p{margin:0;color:var(--mute);font-size:14px}
+/* lab */
+.lab{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+label{display:grid;gap:4px;font:600 11px var(--mono);color:var(--mute);text-transform:uppercase;letter-spacing:.06em}
+input,select{font:14px var(--mono);padding:10px;border:1px solid var(--glass-line);border-radius:9px;background:var(--code);color:var(--ink);width:100%}
+.panel{border:1px solid var(--glass-line);background:var(--glass);border-radius:16px;padding:22px;min-width:0}
+.big{font:800 44px var(--mono);font-variant-numeric:tabular-nums;line-height:1}
+.line{display:flex;justify-content:space-between;gap:12px;font:13px var(--mono);font-variant-numeric:tabular-nums;padding:7px 0;border-bottom:1px dashed var(--line)}
+.verdict{font:800 18px var(--mono);padding:12px 14px;border-radius:10px;margin:12px 0;border:1px solid var(--glass-line)}
+.verdict.ok{color:var(--a)} .verdict.no{color:var(--a3)}
+.g{display:flex;gap:10px;align-items:baseline;font:13px var(--mono);padding:5px 0}
+.p{font:700 10px var(--mono);padding:2px 8px;border-radius:99px;min-width:44px;text-align:center}
+.p.ok{background:var(--a);color:var(--a-ink)} .p.no{background:var(--a3);color:#fff}
+.note{font-size:13px;color:var(--mute);margin:12px 0 0;max-width:70ch}
+/* steps */
+.steps{display:grid;gap:14px;counter-reset:s;padding:0;margin:0;list-style:none}
+.steps li{counter-increment:s;border:1px solid var(--glass-line);background:var(--glass);border-radius:14px;padding:18px 18px 18px 64px;position:relative;min-width:0}
+.steps li::before{content:counter(s);position:absolute;left:18px;top:16px;width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--a),var(--a2));color:var(--a-ink);font:800 14px var(--mono);display:grid;place-items:center}
+.steps h3{margin:0 0 4px;font:800 16px var(--sans)}
+.steps p{margin:0 0 8px;color:var(--mute);font-size:14px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+td code{font:12.5px var(--mono);color:var(--a)}
+.scroll{overflow-x:auto;border:1px solid var(--glass-line);border-radius:14px;background:var(--glass)}
+details{border:1px solid var(--glass-line);background:var(--glass);border-radius:12px;padding:14px 18px;margin-bottom:10px}
+summary{cursor:pointer;font-weight:600}
+details p{color:var(--mute);margin:10px 0 0}
+footer{border-top:1px solid var(--glass-line);padding-block:34px 60px;color:var(--mute);font-size:13px}
+footer p{max-width:80ch}
+@media(max-width:820px){.hero,.lab{grid-template-columns:minmax(0,1fr)}.hero{padding-top:36px}.nav nav{display:none}.gh{margin-left:auto}}
+@media(prefers-reduced-motion:no-preference){.dot{animation:pulse 2s infinite}@keyframes pulse{50%{opacity:.35}}}
+</style>
+</head>
+<body>
+<header class="nav"><div class="w">
+  <a class="logo" href="#top"><i></i>ULTIMATE TRADER</a>
+  <nav aria-label="Sections"><a href="#engines">Engines</a><a href="#flow">Flow</a><a href="#safety">Safety</a><a href="#lab">Lab</a><a href="#install">Install</a><a href="#commands">Commands</a><a href="#faq">FAQ</a></nav>
+  <a class="gh" href="https://github.com/OWNER/ultimate-trader">GitHub</a>
+</div></header>
+
+<main id="top">
+<div class="w">
+  <div class="hero">
+    <div>
+      <span class="pill"><span class="dot"></span>paper first · no order without your yes</span>
+      <h1>Three trading engines. <em>One gated workflow.</em></h1>
+      <p class="sub">Ultimate Trader is a Claude skill that routes your request to TradingAgents, Vibe-Trading or the Day Trader pack, then walks the trade through research, odds, sizing and a risk check before anything can reach a broker.</p>
+      <div class="cmd"><code id="inst">git clone https://github.com/OWNER/ultimate-trader &amp;&amp; cd ultimate-trader &amp;&amp; python install.py</code><button data-copy="#inst">Copy</button></div>
+      <div class="row"><a class="btn primary" href="#install" style="display:grid;place-items:center;text-decoration:none">Install in 3 steps</a><a class="btn" href="#flow" style="display:grid;place-items:center;text-decoration:none">See the flow</a></div>
+    </div>
+    <div class="chart" aria-label="Simulated price paths, illustrative">
+      <div class="top"><span>TIME MACHINE · 40 of 10,000 simulated sessions</span><span>illustrative</span></div>
+      <canvas id="cv" width="640" height="300"></canvas>
+      <div class="odds"><div><b id="o1">29%</b>target first</div><div><b id="o2">26%</b>stop first</div><div><b id="o3">45%</b>neither</div></div>
+    </div>
+  </div>
+  <div class="tiles">
+    <div class="tile"><b>3</b><span>engines</span></div>
+    <div class="tile"><b>12</b><span>skills</span></div>
+    <div class="tile"><b>90</b><span>method skills</span></div>
+    <div class="tile"><b>304</b><span>offline tests</span></div>
+    <div class="tile"><b>3</b><span>gates before an order</span></div>
+  </div>
+</div>
+
+<section id="engines"><div class="w">
+  <div class="kicker">What is inside</div><h2>Pick the engine, or let the router pick</h2>
+  <p class="lead">Each project is strong at one job. The skill knows which to call and hands the result to the next stage.</p>
+  <div class="cards">
+    <div class="card"><span class="tag">Research · swing and longer</span><h3>TradingAgents</h3>
+      <p>A LangGraph team: fundamentals, news, sentiment and technical analysts, then a bull vs bear debate, a risk panel and a portfolio manager who issues the rating.</p>
+      <ul><li>Any Yahoo ticker: <code>NVDA</code>, <code>0700.HK</code>, <code>BTC-USD</code></li><li>Needs one LLM key</li><li>Saves markdown and an HTML report</li></ul>
+      <a class="src" href="https://github.com/TauricResearch/TradingAgents">TauricResearch/TradingAgents · Apache-2.0</a></div>
+    <div class="card"><span class="tag">Validate · backtest · learn</span><h3>Vibe-Trading</h3>
+      <p>Backtests across 11 engines with costs, 478 pre-built alphas, options pricing and a journal analyzer that finds your habits: chasing, overtrading, holding losers.</p>
+      <ul><li>29 data sources, free for US, HK and crypto</li><li>Runs as an MCP server inside Claude</li><li>90 finance method skills on demand</li></ul>
+      <a class="src" href="https://github.com/HKUDS/Vibe-Trading">HKUDS/Vibe-Trading · MIT</a></div>
+    <div class="card"><span class="tag">Execute · intraday</span><h3>Day Trader pack</h3>
+      <p>Eleven skills: scan thousands of charts, track news, time the entry, set stop and target, replay the odds, size to your budget, check risk and send an approved paper order.</p>
+      <ul><li>Plain stdlib Python, no API key</li><li>Free Yahoo, SEC EDGAR, House Clerk data</li><li>Alerts for stop, target and flat-by-close</li></ul>
+      <a class="src" href="https://github.com/Jakeschincariol/day-trader-skill">Jakeschincariol/day-trader-skill · MIT</a></div>
+  </div>
+</div></section>
+
+<section id="flow"><div class="w">
+  <div class="kicker">How it works</div><h2>The whole trade, one step at a time</h2>
+  <p class="lead">Each step reads the file the previous one wrote. Click a step. Dashed steps are gates: nothing moves past them without a pass.</p>
+  <div class="flow" id="flowbtns"></div>
+  <div class="detail" id="flowdetail"></div>
+</div></section>
+
+<section id="safety"><div class="w">
+  <div class="kicker">Safety model</div><h2>Three gates stand between an idea and an order</h2>
+  <p class="lead">The pipeline can research and calculate freely. Only the last step can touch a broker, and only through all three gates, every time, for every order.</p>
+  <div class="gates">
+    <div class="gatec"><h3>Risk PASS</h3><p><code>/trader-risk</code> checks this exact order against your stop, max loss, reward to risk, daily loss, trade count and entry window. BLOCK ends the trade.</p></div>
+    <div class="gatec"><h3>Your typed yes</h3><p>You see the ticket in plain words, with the max loss at the stop, and type yes for that one order. No yes, no order.</p></div>
+    <div class="gatec"><h3>Your click</h3><p>Claude's own Allow once / Deny card appears because the broker tool is set to Needs approval. A second human check.</p></div>
+  </div>
+  <p class="note">Also: paper account by default, keys only in environment variables, web pages and filings treated as data that can never authorize a trade, and a stop is a plan, not a guarantee. Not financial advice. Most people who day trade lose money.</p>
+</div></section>
+
+<section id="lab"><div class="w">
+  <div class="kicker">Try the maths</div><h2>Size a trade like Budget Manager and Risk Manager do</h2>
+  <p class="lead">Defaults are the $60 account rules and the TSLA example from the Day Trader README. Change anything and watch the shares, the binding limit and the verdict move.</p>
+  <div class="lab">
+    <div class="panel"><div class="fields" id="fields"></div>
+      <p class="note">Fixed caps: position 80% of budget, order $48, cash buffer 5%, minimum reward to risk 1.5, daily loss $4, 2 trades a day.</p></div>
+    <div class="panel" id="labout"></div>
+  </div>
+</div></section>
+
+<section id="install"><div class="w">
+  <div class="kicker">Get started</div><h2>Install in three steps</h2>
+  <p class="lead">Needs Python 3.11+ and Claude Code. Everything is local; the installer backs up your Claude config first.</p>
+  <ol class="steps">
+    <li><h3>Install</h3><p>Copies the 12 skills, builds two Python environments (the packages pin conflicting dependencies) and registers the Vibe-Trading MCP server.</p>
+      <div class="cmd"><code id="c1">python install.py</code><button data-copy="#c1">Copy</button></div></li>
+    <li><h3>Set your keys as environment variables</h3><p>Never paste keys into chat. One LLM key for TradingAgents, plus Alpaca <b>paper</b> keys for the broker step. Reopen the terminal after.</p>
+      <div class="cmd"><code id="c2">setx ANTHROPIC_API_KEY "..."; setx ALPACA_API_KEY "PK..."; setx ALPACA_SECRET_KEY "..."</code><button data-copy="#c2">Copy</button></div></li>
+    <li><h3>Check, restart, trade on paper</h3><p>The doctor prints OK, WARN or FAIL for each piece and never shows key values. Restart Claude Code, then ask.</p>
+      <div class="cmd"><code id="c3">python scripts/doctor.py</code><button data-copy="#c3">Copy</button></div></li>
+  </ol>
+  <p class="note">Set your limits by copying <code>config.example.json</code> to <code>trader/config.json</code>. For the broker, add Alpaca's official MCP server in paper mode; <code>/trader-broker</code> walks you through it.</p>
+</div></section>
+
+<section id="commands"><div class="w">
+  <div class="kicker">Cheat sheet</div><h2>What to type</h2>
+  <div class="scroll"><table>
+    <tr><th>You want</th><th>Type</th><th>Engine</th></tr>
+    <tr><td>Should I buy this?</td><td><code>/ultimate-trader analyze NVDA</code></td><td>TradingAgents</td></tr>
+    <tr><td>A day trade today</td><td><code>/ultimate-trader find me a day trade, $60, $2 max loss, paper</code></td><td>All three</td></tr>
+    <tr><td>Test a strategy</td><td><code>/ultimate-trader backtest 20/50 SMA on AAPL 2022-2025 with costs</code></td><td>Vibe-Trading</td></tr>
+    <tr><td>Review my habits</td><td><code>/ultimate-trader review my trades</code> + CSV</td><td>Vibe-Trading</td></tr>
+    <tr><td>Find setups</td><td><code>/trader-scanner</code></td><td>Day Trader</td></tr>
+    <tr><td>Odds of a setup</td><td><code>/trader-timemachine</code></td><td>Day Trader</td></tr>
+    <tr><td>How many shares</td><td><code>/trader-budget</code></td><td>Day Trader</td></tr>
+    <tr><td>Is it allowed</td><td><code>/trader-risk</code></td><td>Day Trader</td></tr>
+    <tr><td>Place the paper order</td><td><code>/trader-broker</code></td><td>Day Trader</td></tr>
+    <tr><td>Earnings, Congress trades</td><td><code>/trader-analyst</code> · <code>/trader-pelosi</code></td><td>Day Trader</td></tr>
+  </table></div>
+</div></section>
+
+<section id="faq"><div class="w">
+  <div class="kicker">Questions</div><h2>FAQ</h2>
+  <details><summary>Does it trade real money?</summary><p>No, not by default. The config ships with <code>"paper": true</code> and Alpaca's server defaults to the paper account. Going live is a deliberate change you make yourself, and every order still needs the three gates.</p></details>
+  <details><summary>Can Claude place a trade on its own?</summary><p>No. Only <code>/trader-broker</code> can lead to an order, only after a risk PASS for that exact order, your typed yes, and your click on Claude's permission card.</p></details>
+  <details><summary>Why two Python environments?</summary><p>TradingAgents and Vibe-Trading pin conflicting versions of shared libraries, so pip cannot install both together. Each gets its own environment.</p></details>
+  <details><summary>Does it work with $60?</summary><p>Yes, with fractional shares and a small max loss, which is what the default config sets. Costs and spreads matter more at this size, so treat it as a learning account.</p></details>
+  <details><summary>How good are the predictions?</summary><p>There are none. The Time Machine is a simulation built from a stock's recent bars, and backtests describe the past. Coin-flip odds mean pass. Under about 30 historical trades is an anecdote.</p></details>
+  <details><summary>Where does the data come from?</summary><p>Free, unofficial sources: Yahoo Finance charts, Nasdaq Trader symbol lists, SEC EDGAR and the House Clerk. They can lag or rate-limit. Verify price-critical numbers with your broker.</p></details>
+</div></section>
+</main>
+
+<footer><div class="w">
+  <p><b>Not financial advice.</b> This is software that reads public data and does arithmetic. It cannot see the future and does not know your situation. Most people who day trade lose money. Talk to a licensed professional if you need advice.</p>
+  <p>MIT licensed. Bundles skills from the Day Trader skill (Jake Schincariol, MIT) and Vibe-Trading's skill library (HKUDS, MIT); installs TradingAgents (Tauric Research, Apache-2.0) and Vibe-Trading from PyPI. Not affiliated with or endorsed by the upstream authors.</p>
+</div></footer>
+
+<script>
+const STEPS=[
+ ['Scan','trader-scanner','Reads thousands of free charts and lists the ones matching a rule: 20-day breakout, bull flag, oversold, opening-range breakout.','Nasdaq Trader lists, Yahoo charts','trader/watchlist.json','A match is a chart to look at, not a stock to buy.'],
+ ['News','trader-news','Headlines, SEC 8-Ks and today\'s move for each watched stock, tagged earnings, deal, analyst, halt.','trader/watchlist.json','new items only','An earnings report or halt can gap past any stop. Skip anything reporting before your exit.'],
+ ['Research','TradingAgents','Analysts argue bull vs bear, a risk panel debates, a portfolio manager rates the ticker.','Yahoo, SEC EDGAR, your LLM key','report + complete_report.html','Forces both sides of the case onto the page. Costs LLM tokens, so keep debate rounds at 1.'],
+ ['Test','trader-timemachine + Vibe-Trading','Replays the rest of the session 10,000 times from the stock\'s own bars and re-runs the rule on every past day it fired. Vibe-Trading backtests longer rules with costs.','trader/plan.json, 60 days of 5m bars','trader/timemachine.json','Honest odds. A coin flip means pass.'],
+ ['Entry','trader-entry','Watches bar by bar and calls the entry on the first 5-minute bar that closes above the opening range.','Yahoo 1m and 5m bars','trader/entry.json','Waiting, triggered or expired, with the price and time. A wick is not a trigger.'],
+ ['Exit','trader-exit','Sets the stop (opening-range midpoint by default) and the target (2R by default) before you enter.','trader/entry.json','trader/plan.json','You decide where you are wrong while you are calm.'],
+ ['Size','trader-budget','Finds the shares that fit four limits: max loss, position cap, max order, cash after buffer. Writes one bracket order.','plan.json, config.json','trader/orders.json','A stop too far for your max loss is a refusal, not a smaller order.'],
+ ['Risk','trader-risk','Checks the order against every limit. Prints PASS or BLOCK with the reason.','orders.json, config.json','trader/state/risk.json','GATE 1. BLOCK ends the trade. Do not nudge numbers to get a PASS.',true],
+ ['Approve','trader-broker','Shows the ticket in plain words. You type yes for that exact order, then click Allow once. Only then does Alpaca (paper) receive it.','orders.json, risk.json','trader/state/broker.json','GATES 2 AND 3. Your yes and your click.',true],
+ ['Watch','trader-alerts','Rings on the stop, the target and your flat-by time, each once.','trader/plan.json','trader/alerts.json','A day trade is closed before the bell.'],
+ ['Review','Vibe-Trading journal','Feed the broker CSV to the journal analyzer monthly to surface chasing, overtrading and holding losers.','broker CSV','HTML report','The loop that makes the next trade better.']
+];
+let cur=0;
+const $=s=>document.querySelector(s);
+function flow(){
+  $('#flowbtns').innerHTML=STEPS.map((s,i)=>`<button class="st ${s[6]?'gate':''}" data-i="${i}" aria-pressed="${i===cur}">${i+1} ${s[0]}</button>`).join('');
+  const s=STEPS[cur];
+  $('#flowdetail').innerHTML=`<h3>${cur+1}. ${s[0]} <span class="tag">${s[1]}</span></h3><p style="margin:0;max-width:65ch">${s[2]}</p>
+  <div class="kv"><b>Reads</b><span>${s[3]}</span><b>Writes</b><span>${s[4]}</span><b>Why</b><span>${s[5]}</span></div>`;
+}
+$('#flowbtns').onclick=e=>{const b=e.target.closest('[data-i]');if(b){cur=+b.dataset.i;flow()}};
+flow();
+
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-copy]');if(!b)return;
+  const t=$(b.dataset.copy).textContent;
+  navigator.clipboard.writeText(t).then(()=>{b.textContent='Copied';setTimeout(()=>b.textContent='Copy',1200)}).catch(()=>{b.textContent='Select it'});
+});
+
+/* lab */
+const FIELDS=[['entry','Entry $',364.18],['stop','Stop $',358.32],['target','Target $',370.04],['budget','Budget $',60],['maxLoss','Max loss / trade $',2],['dayUsed','Lost today $',0],['tt','Trades today',0]];
+$('#fields').innerHTML=FIELDS.map(f=>`<label>${f[1]}<input id="${f[0]}" type="number" step="0.01" min="0" value="${f[2]}"></label>`).join('')+
+ '<label>Fractional shares<select id="frac"><option value="y">Yes</option><option value="n">No, whole only</option></select></label>';
+function calc(){
+  const g=id=>parseFloat($('#'+id).value)||0,entry=g('entry'),stop=g('stop'),target=g('target'),budget=g('budget'),ml=g('maxLoss'),du=g('dayUsed'),tt=g('tt'),fr=$('#frac').value==='y';
+  const rps=entry-stop,rew=target-entry,rr=rps>0?rew/rps:0;
+  const lim=[['Max loss',rps>0?ml/rps:0],['Position cap',entry>0?budget*.8/entry:0],['Max order',entry>0?48/entry:0],['Cash after buffer',entry>0?budget*.95/entry:0]];
+  let q=Math.min(...lim.map(l=>l[1]));const bind=lim.reduce((a,b)=>b[1]<a[1]?b:a);
+  q=fr?Math.floor(q*1000)/1000:Math.floor(q);
+  const cost=q*entry,loss=q*rps,win=q*rew;
+  const G=[['Stop below entry',rps>0],['Target above entry',rew>0],[`Reward:risk ≥ 1.5 (now ${rr.toFixed(2)})`,rr>=1.5],[`Loss at stop ≤ $${ml} (now $${loss.toFixed(2)})`,loss<=ml+1e-9&&q>0],[`Order ≤ $48 (now $${cost.toFixed(2)})`,cost<=48+1e-9],[`Day loss $${(du+loss).toFixed(2)} ≤ $4`,du+loss<=4+1e-9],[`Trades today ${tt} < 2`,tt<2],['Fits cash after buffer',cost<=budget*.95+1e-9]];
+  const ok=G.every(x=>x[1]);
+  $('#labout').innerHTML=`<span class="tag">Shares</span><div class="big">${q>0?q:0}</div>
+  <div class="line"><span>Order cost</span><span>$${cost.toFixed(2)}</span></div><div class="line"><span>Loss if stop fills</span><span>$${loss.toFixed(2)}</span></div>
+  <div class="line"><span>Gain if target fills</span><span>$${win.toFixed(2)}</span></div><div class="line"><span>Decided by</span><span>${bind[0]}</span></div>
+  <div class="verdict ${ok?'ok':'no'}">${ok?'PASS':'BLOCK'}</div>${G.map(x=>`<div class="g"><span class="p ${x[1]?'ok':'no'}">${x[1]?'OK':'FAIL'}</span><span>${x[0]}</span></div>`).join('')}
+  <p class="note">A teaching model of the pack's rules. The real run uses live data. Not financial advice.</p>`;
+}
+document.querySelector('.lab').addEventListener('input',calc);document.querySelector('.lab').addEventListener('change',calc);calc();
+
+/* hero chart: seeded random walks */
+(function(){
+  const cv=$('#cv'),c=cv.getContext('2d');let seed=19;
+  const rnd=()=>{seed=(seed*1664525+1013904223)%4294967296;return seed/4294967296};
+  const N=40,T=78,paths=[];
+  for(let i=0;i<N;i++){let p=0;const a=[0];for(let t=1;t<T;t++){p+=(rnd()-.5)*.55;a.push(p)}paths.push(a)}
+  const tgt=2.2,stp=-1.1;let hit={t:0,s:0,n:0};
+  paths.forEach(a=>{let r='n';for(const v of a){if(v>=tgt){r='t';break}if(v<=stp){r='s';break}}hit[r]++});
+  function css(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim()}
+  let prog=0;
+  function draw(){
+    const W=cv.width,H=cv.height,css_a=css('--a'),css_r=css('--a3'),css_m=css('--mute');
+    c.clearRect(0,0,W,H);
+    const lo=-3,hi=4,Y=v=>H-(v-lo)/(hi-lo)*H,X=t=>t/(T-1)*W;
+    c.lineWidth=1;c.setLineDash([5,5]);
+    c.strokeStyle=css_a;c.beginPath();c.moveTo(0,Y(tgt));c.lineTo(W,Y(tgt));c.stroke();
+    c.strokeStyle=css_r;c.beginPath();c.moveTo(0,Y(stp));c.lineTo(W,Y(stp));c.stroke();
+    c.strokeStyle=css_m;c.beginPath();c.moveTo(0,Y(0));c.lineTo(W,Y(0));c.stroke();c.setLineDash([]);
+    const upto=Math.min(T-1,Math.floor(prog));
+    paths.forEach(a=>{
+      let col=css_m;for(const v of a){if(v>=tgt){col=css_a;break}if(v<=stp){col=css_r;break}}
+      c.strokeStyle=col;c.globalAlpha=.55;c.lineWidth=1.3;c.beginPath();
+      for(let t=0;t<=upto;t++){t?c.lineTo(X(t),Y(a[t])):c.moveTo(X(t),Y(a[t]))}c.stroke();
+    });
+    c.globalAlpha=1;
+    c.fillStyle=css_a;c.font='11px JetBrains Mono, monospace';c.fillText('target 2R',6,Y(tgt)-6);
+    c.fillStyle=css_r;c.fillText('stop',6,Y(stp)+14);
+    if(prog<T){prog+=.7;requestAnimationFrame(draw)}
+  }
+  const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+  if(reduce)prog=T;
+  $('#o1').textContent=Math.round(hit.t/N*100)+'%';$('#o2').textContent=Math.round(hit.s/N*100)+'%';$('#o3').textContent=Math.round(hit.n/N*100)+'%';
+  draw();
+  matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{prog=T;draw()});
+})();
+</script>
+</body>
+</html>
