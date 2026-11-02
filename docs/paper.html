@@ -5,15 +5,22 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Paper Trade Race</title>
 <meta name="description" content="Pick your cash and a goal. You trade by hand and the Ultimate Trader skills trade on their own, on the same live chart, until one of you reaches the goal. Every move is in a journal.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap">
 <style>
-:root{--paper:#f7f8fa;--panel:#ffffff;--ink:#0f1b26;--mute:#5b6c7b;--rule:#e1e6eb;--steel:#2b5a8c;--go:#0f7f5a;--stop:#c3303a;--amber:#a96d12;--on:#fff;
---text:'Segoe UI',system-ui,sans-serif;--mono:ui-monospace,Consolas,monospace}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#0d1620;--panel:#142130;--ink:#e5edf4;--mute:#94a8ba;--rule:#27394b;--steel:#82b2e2;--go:#42cc95;--stop:#ff6d75;--amber:#e8b04c;--on:#0a1420}}
+:root{--hero:#2742ff;--paper:#f4f6ff;--panel:#ffffff;--ink:#0a1038;--mute:#555e8f;--rule:#dde2f5;--steel:#2742ff;--go:#00a46a;--stop:#e3234a;--amber:#d98e00;--on:#fff;
+--display:'Syne','Segoe UI',system-ui,sans-serif;--text:'Figtree','Segoe UI',system-ui,sans-serif;--mono:'JetBrains Mono',ui-monospace,Consolas,monospace}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--hero:#1c2fd0;--paper:#080b22;--panel:#10163a;--ink:#eef0ff;--mute:#98a1d4;--rule:#232b5e;--steel:#8fa2ff;--go:#3be0a4;--stop:#ff5a7e;--amber:#ffc65a;--on:#080b22}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.5 var(--text)}
 .wrap{max-width:980px;margin:0 auto;padding:28px 20px 72px}
 a{color:var(--steel)}
-h1{font-size:clamp(34px,6vw,52px);line-height:1;letter-spacing:-.035em;font-weight:800;margin:28px 0 12px}
+h1{font-family:var(--display);font-size:clamp(34px,6vw,60px);line-height:1;letter-spacing:-.035em;font-weight:800;margin:26px 0 14px}
+.band{background:var(--hero);color:#fff;margin-bottom:28px}
+.band .wrap{padding-bottom:44px}
+.band a{color:#fff;font-weight:600}
+.band p.lead{color:rgba(255,255,255,.82);margin:0}
 h3{font-size:15px;margin:0 0 6px}
 p.lead{color:var(--mute);margin:0 0 28px;max-width:56ch;font-size:18px}
 .card{background:var(--panel);border:1px solid var(--rule);border-radius:16px;padding:24px;margin-bottom:20px}
@@ -27,7 +34,7 @@ svg text{font:11px var(--mono);fill:var(--mute)}
 .bar input,.bar select{width:112px;padding:7px;border:1px solid var(--rule);border-radius:10px;background:var(--paper);color:var(--ink);font:15px var(--mono)}
 .bar select{width:auto;font-family:var(--text)}
 button{font:600 14px var(--text);padding:10px 18px;border-radius:99px;border:1px solid var(--rule);background:transparent;color:var(--ink);cursor:pointer}
-button.p{background:var(--steel);color:var(--on);border-color:var(--steel)}
+button.p{background:var(--hero);color:#fff;border-color:var(--hero)}
 button.buy{background:var(--go);color:var(--on);border-color:var(--go)}
 button.sell{background:var(--stop);color:var(--on);border-color:var(--stop)}
 button:disabled{opacity:.4;cursor:not-allowed}
@@ -48,11 +55,13 @@ th{color:var(--mute);font-weight:500}
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="band"><div class="wrap">
 <p><a href="index.html">Back to Ultimate Trader</a></p>
 <h1>Paper trade race</h1>
 <p class="lead">Choose your cash and a goal. You and the skills each start with that cash and trade the same live chart, until one of you reaches the goal. You click Buy and Sell by hand. The skills read every candle and trade on their own.</p>
 
+</div></div>
+<div class="wrap">
 <div id="banner" role="status"></div>
 
 <div class="card">
