@@ -1,5 +1,7 @@
 # Ultimate Trader
 
+[![ci](https://github.com/Kafish69/ultimate-trader/actions/workflows/ci.yml/badge.svg)](https://github.com/Kafish69/ultimate-trader/actions/workflows/ci.yml) [![license](https://img.shields.io/badge/license-MIT-2742ff.svg)](LICENSE) [![website](https://img.shields.io/badge/site-live-00a46a.svg)](https://kafish69.github.io/ultimate-trader/)
+
 One Claude skill that combines three open-source trading projects into a single, gated workflow: **research, validate, size, risk-check, approve**. Paper trading by default. No order is ever placed without your explicit yes.
 
 | Engine | What it gives you | Source |
@@ -9,6 +11,8 @@ One Claude skill that combines three open-source trading projects into a single,
 | **Day Trader pack** | Scan, news, entry, exit, Time Machine, budget, risk, broker, alerts, earnings, Congress trades | [Jakeschincariol/day-trader-skill](https://github.com/Jakeschincariol/day-trader-skill) (MIT) |
 
 `/ultimate-trader` reads your request, picks the engine, and runs the pipeline in order. Docs, a live walkthrough and a paper-trade race against the skills: **[the project website](https://kafish69.github.io/ultimate-trader/)** (GitHub Pages, from `docs/`).
+
+[![The Ultimate Trader website](docs/assets/preview.png)](https://kafish69.github.io/ultimate-trader/)
 
 > **Not financial advice.** This is software that reads public data and does arithmetic. Most people who day trade lose money. Use a paper account first.
 
@@ -91,7 +95,7 @@ python skills/trader-graduate/graduate.py check
 
 ## Paper trade race (website)
 
-The site has a practice page where you pick your cash and a goal, then trade a live candlestick chart by hand while the skills trade the same chart on their own. Both journals fill in, the skills' with the reason for every move. The chart is a made-up price series, so it teaches the workflow, not what the market will do. Nothing is saved and no account is involved.
+The site has a practice page where you pick your cash and a goal, then trade a live candlestick chart by hand while the skills trade the same chart on their own. Both journals fill in, the skills' with the reason for every move. The chart is a made-up price series, and the skills' rules there are a simplified version of the real ones, so it teaches the workflow, not what the market will do. Nothing is saved and no account is involved.
 
 ## Safety model
 
@@ -125,6 +129,11 @@ python install.py --skills
 ```
 
 CI runs the same checks on Linux, macOS and Windows.
+
+## Project
+
+- [Changelog](CHANGELOG.md) · [Contributing](CONTRIBUTING.md) · [Security policy](SECURITY.md)
+- Report a problem or an idea through [Issues](https://github.com/Kafish69/ultimate-trader/issues). Safety problems go through the private Security tab.
 
 ## Credits and licenses
 

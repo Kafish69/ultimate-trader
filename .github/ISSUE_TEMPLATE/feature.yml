@@ -1,0 +1,17 @@
+name: Idea
+description: Suggest an improvement
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like, and why
+    validations:
+      required: true
+  - type: checkboxes
+    id: safe
+    attributes:
+      label: Safety
+      options:
+        - label: This does not weaken the risk check, the typed yes, the permission click or the graduation check.
+          required: true
