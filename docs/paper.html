@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Paper Trade Race</title>
-<meta name="description" content="Pick your cash and a goal. You and the Ultimate Trader skills both paper trade the same chart, day after day, until one of you reaches the goal. Every move is written in a journal.">
+<meta name="description" content="Pick your cash and a goal. You trade by hand and the Ultimate Trader skills trade on their own, on the same live chart, until one of you reaches the goal. Every move is in a journal.">
 <style>
 :root{--paper:#e9eef2;--panel:#f6f9fb;--ink:#10212f;--mute:#4f6376;--rule:#c2ced8;--steel:#2b5a8c;--go:#0f7f5a;--stop:#c3303a;--amber:#a96d12;--on:#fff;
 --text:'Segoe UI',system-ui,sans-serif;--mono:ui-monospace,Consolas,monospace}
@@ -37,14 +37,12 @@ table{width:100%;border-collapse:collapse;font:14px var(--mono)}
 td,th{text-align:left;padding:6px 8px;border-bottom:1px solid var(--rule);vertical-align:top}
 th{color:var(--mute);font-weight:500}
 .fine{font-size:13px;color:var(--mute)}
-.gap{margin-left:auto}
 .prog{height:8px;background:var(--rule);border-radius:4px;overflow:hidden;min-width:90px}
 .prog i{display:block;height:100%}
 .jgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;margin-top:8px}
-.jbox{font-size:14px;max-height:380px;overflow:auto;border-top:1px solid var(--rule)}
+.jbox{font-size:14px;max-height:400px;overflow:auto;border-top:1px solid var(--rule)}
 .jbox>div{padding:7px 0;border-bottom:1px solid var(--rule)}
 .jbox .t{font:12px var(--mono);color:var(--mute);margin-right:8px}
-.jbox .day{color:var(--mute);font-size:13px}
 #banner{display:none;border:2px solid var(--go);border-radius:3px;padding:12px 16px;margin-bottom:14px;font-weight:600}
 @media(max-width:640px){.jgrid{grid-template-columns:minmax(0,1fr)}}
 </style>
@@ -53,7 +51,7 @@ th{color:var(--mute);font-weight:500}
 <div class="wrap">
 <p><a href="index.html">Back to Ultimate Trader</a></p>
 <h1>Paper trade race</h1>
-<p class="lead">Choose your cash and a goal. You and the skills each start with that cash and trade the same chart, day after day, until one of you reaches the goal. The skills read every candle and trade by themselves. You click Buy and Sell yourself.</p>
+<p class="lead">Choose your cash and a goal. You and the skills each start with that cash and trade the same live chart, until one of you reaches the goal. You click Buy and Sell by hand. The skills read every candle and trade on their own.</p>
 
 <div id="banner" role="status"></div>
 
@@ -62,20 +60,19 @@ th{color:var(--mute);font-weight:500}
     <label>Starting cash ($)<input id="startcash" type="number" min="5" step="1" value="60"></label>
     <label>Goal ($)<input id="goal" type="number" min="10" step="1" value="22000"></label>
     <label>Max loss per trade (% of cash)<input id="losspct" type="number" min="0.1" max="10" step="0.1" value="3.3"></label>
-    <label>Speed<select id="speed"><option value="normal">Normal</option><option value="fast">Fast</option><option value="max">Max (skills only)</option></select></label>
+    <label>Speed<select id="speed"><option value="normal">Normal</option><option value="fast">Fast</option></select></label>
     <button class="p" id="start">Start trading</button>
     <button id="pause" disabled>Pause</button>
     <button id="next" disabled>Next candle</button>
   </div>
-  <p class="fine" style="margin-bottom:0">Both accounts start with the same cash and the same chart. Cash carries over from day to day, so wins and losses compound. At Max speed days fly by and only the skills trade; your account waits until you slow down.</p>
+  <p class="fine" style="margin-bottom:0">Both accounts start with the same cash and see the same candles. Nothing is saved, so everyone who opens this page starts from zero with their own cash.</p>
 </div>
 
 <div class="card">
   <div class="top">
-    <span>Day<b id="dayno">-</b></span>
+    <span>Candle<b id="cno">-</b></span>
     <span>Your cash<b id="cash">-</b></span>
     <span>Your open P/L<b id="open">-</b></span>
-    <span>Time<b id="clk">-</b></span>
     <span>Price<b id="px">-</b></span>
     <span>Skills<b id="sstate">-</b></span>
   </div>
@@ -93,8 +90,8 @@ th{color:var(--mute);font-weight:500}
 <div class="card">
   <strong>The race</strong>
   <table id="cmp" style="margin-top:6px"></table>
-  <svg id="eq" viewBox="0 0 900 200" role="img" aria-label="Account value at the end of each day, you against the skills, on a log scale" style="margin-top:12px"></svg>
-  <p class="fine" style="margin-bottom:0">Account value at the end of each day, log scale. Blue is you, amber is the skills, the green dashed line is the goal.</p>
+  <svg id="eq" viewBox="0 0 900 200" role="img" aria-label="Account value over time, you against the skills, on a log scale" style="margin-top:12px"></svg>
+  <p class="fine" style="margin-bottom:0">Account value over time, log scale. Blue is you, amber is the skills, the green dashed line is the goal.</p>
 </div>
 
 <div class="card">
@@ -106,68 +103,68 @@ th{color:var(--mute);font-weight:500}
 </div>
 
 <div class="card" id="adv">
-  <strong>What the skills say about the chart right now (for your next trade)</strong>
+  <strong>What the skills say about the chart right now</strong>
   <div id="verdict" style="font-size:20px;font-weight:700;margin:8px 0"></div>
   <table id="skills"></table>
   <div class="bar"><button class="buy" id="take" disabled>Take the skills' trade</button></div>
-  <p class="fine">Each row is a simple version of the real skill, run on this chart: Scanner, Entry timer (15-minute opening range breakout), Exit planner (stop at the range midpoint, target at 2R), Time Machine (1,000 simulated finishes), Budget, Risk and Alerts. The skills account above uses exactly this logic on its own.</p>
+  <p class="fine">Each row is a simple version of the real skill, run on this chart: Scanner, Entry timer (a close above the last 12 candles' high), Exit planner (stop at the middle of that range, target at 2R), Time Machine (1,000 simulated finishes), Budget, Risk and Alerts. The skills account above runs this same logic by itself. You can follow it or ignore it.</p>
 </div>
 
-<p class="fine">Rules from the Ultimate Trader setup, scaled to your cash: the most you can lose on one trade is the percent you set, the daily loss limit is twice that, shares are sized from the stop, positions never exceed 80% of cash, one position at a time, 2 trades a day, buys from 9:45 to 15:00, and any open trade is closed at 15:55. A fee of 0.03% is charged on each side. The chart is a made-up random price series with some drift, not a real stock, and the skills only ever see candles that have already closed. A result here says nothing about real markets. Practice only, not financial advice.</p>
+<p class="fine">Rules from the Ultimate Trader setup, scaled to your cash: the most you can lose on one trade is the percent you set, a rolling loss limit of twice that stops new trades for a while, shares are sized from the stop, a position never exceeds 80% of cash, one position at a time, a 6-candle pause after each trade, and a trade that goes nowhere is closed after 40 candles. A fee of 0.03% is charged on each side. The chart is a made-up random price series with some drift, not a real stock, and the skills only ever see candles that have already closed. A result here says nothing about real markets. Practice only, not financial advice.</p>
 </div>
 <script>
 var $=function(s){return document.querySelector(s)};
-var HIST=36,BARS=78,LAST=HIST+BARS-1,FEE=0.0003,MAXDAYS=10000;
+var HIST=60,FEE=0.0003,HOLD=40,COOL=6,RANGE=12;
 var cfg={start:60,goal:22000,lossPct:3.3};
-var D,i,day=0,H,S,running=false,timer=null,touched=false,finished=false,speed='normal';
+var D=null,i=0,H,S,running=false,timer=null,touched=false,finished=false,speed='normal',G,AD=null,jv=[-1,-1];
 function rng(seed){return function(){seed|=0;seed=seed+0x6D2B79F5|0;var t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
-function gen(seed){
-  var R=rng(seed),p=300+R()*120,trend=0,out=[];
-  for(var k=0;k<HIST+BARS;k++){
-    if(k%18===0)trend=(R()-.5)*p*0.0016;
+function startChart(){G={R:rng((Math.random()*1e9)|0),p:300+Math.random()*120,trend:0,k:0};D=[];extend(HIST+2)}
+function extend(n){
+  while(D.length<n){
+    var R=G.R,p=G.p;
+    if(G.k%18===0)G.trend=(R()-.5)*p*0.0016;
     var o=p,c=o,hi=o,lo=o;
-    for(var s=0;s<5;s++){var z=Math.sqrt(-2*Math.log(R()||1e-9))*Math.cos(2*Math.PI*R());c+=trend/5+z*p*0.0007;hi=Math.max(hi,c);lo=Math.min(lo,c)}
-    out.push({o:o,h:hi,l:lo,c:c,v:Math.round(40+R()*60+Math.abs(c-o)/p*60000)});p=c;
+    for(var s=0;s<5;s++){var z=Math.sqrt(-2*Math.log(R()||1e-9))*Math.cos(2*Math.PI*R());c+=G.trend/5+z*p*0.0007;hi=Math.max(hi,c);lo=Math.min(lo,c)}
+    D.push({o:o,h:hi,l:lo,c:c,v:Math.round(40+R()*60+Math.abs(c-o)/p*60000)});G.p=c;G.k++;
   }
-  return out;
 }
-function clock(k){var m=570+(k-HIST)*5,h=Math.floor(m/60),mm=m%60;return h+':'+(mm<10?'0':'')+mm}
+function cn(k){return k-(HIST-1)}
+function lab(k){return '#'+cn(k)}
 function money(v){return (v<0?'-':'+')+'$'+Math.abs(v).toFixed(2)}
 function usd(v){return '$'+v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}
 function cl(v){return v>0.004?'up':v<-0.004?'down':''}
-function newAcct(){return {cash:cfg.start,pos:null,trades:[],dayPnl:0,limit:0,journal:[],ver:0,marks:[],last:'',seen:{},n:0,wins:0,curve:[cfg.start]}}
+function newAcct(){return {cash:cfg.start,pos:null,trades:[],journal:[],ver:0,marks:[],last:'',seen:{},n:0,wins:0,lastExit:-999,curve:[cfg.start]}}
 function eq(a){return a.cash+(a.pos&&D?a.pos.q*D[i].c:0)}
-function say(a,t,isDay){a.journal.unshift('<div'+(isDay?' class="day"':'')+'><span class="t">D'+day+' '+clock(i)+'</span>'+t+'</div>');if(a.journal.length>400)a.journal.pop();a.ver++}
+function say(a,t){a.journal.unshift('<div><span class="t">'+lab(i)+'</span>'+t+'</div>');if(a.journal.length>400)a.journal.pop();a.ver++}
+function limit(a){return 2*cfg.lossPct/100*a.cash}
+function recentPnl(a){var s=0;a.trades.forEach(function(x){if(i-x.i<78)s+=x.p});return s}
 
 /* ---- the skills (simple versions, run on closed candles only) ---- */
 function sd(a){var m=a.reduce(function(x,y){return x+y},0)/a.length;return Math.sqrt(a.reduce(function(x,y){return x+(y-m)*(y-m)},0)/a.length)}
 function compute(a){
-  var c=D[i].c,mins=570+(i-HIST)*5,rows=[],ok=true,wait=false,why='';
+  var c=D[i].c,rows=[],ok=true,wait=false,why='';
   var row=function(n,st,tx){rows.push([n,st,tx])};
   var rec=D.slice(i-19,i+1),ma=rec.reduce(function(x,b){return x+b.c},0)/20,vavg=rec.reduce(function(x,b){return x+b.v},0)/20;
   var sc=c>ma&&D[i].v>=vavg*0.8;
   row('Scanner',sc?'ok':'no',sc?'Price is above its 20-candle average and volume is normal or better.':'Price is below its 20-candle average or volume is thin. Weak setup.');
   if(!sc){ok=false;why='Chart does not look like a setup.'}
-  var orEnd=HIST+2,orH=-1e9,orL=1e9,trig=false;
-  if(i<orEnd){row('Entry timer','wait','The opening range (first 15 minutes) is still forming.');wait=true;if(!why)why='Opening range is still forming.'}
-  else{
-    for(var k=HIST;k<=orEnd;k++){orH=Math.max(orH,D[k].h);orL=Math.min(orL,D[k].l)}
-    for(var k=orEnd+1;k<=i;k++){if(D[k].c>orH){trig=true;break}}
-    if(mins>900){row('Entry timer','no','Past 15:00. No new entries.');ok=false;if(!why)why='Too late in the day.'}
-    else if(c>orH)row('Entry timer','ok','A candle closed above the range high of $'+orH.toFixed(2)+'. Breakout.');
-    else if(trig){row('Entry timer','wait','The breakout already happened earlier and price fell back inside. Do not chase it.');wait=true;if(!why)why='Breakout failed or is gone.'}
-    else{row('Entry timer','wait','Waiting for a close above $'+orH.toFixed(2)+' ($'+(orH-c).toFixed(2)+' away).');wait=true;if(!why)why='Waiting for the breakout.'}
-  }
-  var maxLoss=cfg.lossPct/100*a.cash,entry=c,stop=orL<1e8?Math.floor((orH+orL)/2*100)/100:c*0.996,tgt=0,rps=entry-stop,q=0,pt=0,ps=0,ev=0;
-  if(rps<=0){row('Exit planner','no','Price is not above the range midpoint, so there is no valid stop.');ok=false;if(!why)why='No valid stop.'}
+  var rH=-1e9,rL=1e9;
+  for(var k=i-RANGE;k<i;k++){rH=Math.max(rH,D[k].h);rL=Math.min(rL,D[k].l)}
+  var prevH=-1e9;for(var k=i-RANGE-1;k<i-1;k++)prevH=Math.max(prevH,D[k].h);
+  if(c>rH){
+    if(D[i-1].c>prevH){row('Entry timer','wait','The breakout above $'+rH.toFixed(2)+' already happened a candle ago. Do not chase it.');wait=true;if(!why)why='Breakout is already a candle old.'}
+    else row('Entry timer','ok','This candle closed above the last '+RANGE+' candles\' high of $'+rH.toFixed(2)+'. Fresh breakout.');
+  }else{row('Entry timer','wait','Waiting for a close above $'+rH.toFixed(2)+' ($'+(rH-c).toFixed(2)+' away).');wait=true;if(!why)why='Waiting for the breakout.'}
+  var maxLoss=cfg.lossPct/100*a.cash,entry=c,stop=Math.floor((rH+rL)/2*100)/100,tgt=0,rps=entry-stop,q=0,pt=0,ps=0,ev=0;
+  if(rps<=0){row('Exit planner','no','Price is not above the middle of the range, so there is no valid stop.');ok=false;if(!why)why='No valid stop.'}
   else if(rps/entry<0.0015){row('Exit planner','no','Stop is too close to the price ('+(rps/entry*100).toFixed(2)+'%). It would be hit by noise.');ok=false;if(!why)why='Stop too tight.'}
-  else{tgt=Math.round((entry+2*rps)*100)/100;row('Exit planner','ok','Stop $'+stop.toFixed(2)+' (range midpoint), target $'+tgt.toFixed(2)+' (2R).')}
+  else{tgt=Math.round((entry+2*rps)*100)/100;row('Exit planner','ok','Stop $'+stop.toFixed(2)+' (middle of the range), target $'+tgt.toFixed(2)+' (2R).')}
   if(tgt&&ok&&!wait){
     var rets=[];for(var k=i-29;k<=i;k++)rets.push(D[k].c-D[k-1].c);
-    var sg=sd(rets),R=rng(i*7+day),left=Math.min(LAST-i,Math.floor((955-mins)/5)),tw=0,sw=0,N=1000;
-    for(var n=0;n<N;n++){var p=entry;for(var b=0;b<left;b++){p+=sg*Math.sqrt(-2*Math.log(R()||1e-9))*Math.cos(2*Math.PI*R());if(p<=stop){sw++;break}if(p>=tgt){tw++;break}}}
+    var sg=sd(rets),R=rng(i*7+13),tw=0,sw=0,N=1000;
+    for(var n=0;n<N;n++){var p=entry;for(var b=0;b<HOLD;b++){p+=sg*Math.sqrt(-2*Math.log(R()||1e-9))*Math.cos(2*Math.PI*R());if(p<=stop){sw++;break}if(p>=tgt){tw++;break}}}
     pt=tw/N;ps=sw/N;ev=pt*2-ps;
-    row('Time Machine',ev>0.05?'ok':'no','Of '+N+' simulated finishes, '+(pt*100).toFixed(0)+'% hit the target first, '+(ps*100).toFixed(0)+'% hit the stop first. Average result '+(ev>=0?'+':'')+ev.toFixed(2)+'R.');
+    row('Time Machine',ev>0.05?'ok':'no','Of '+N+' simulated '+HOLD+'-candle futures, '+(pt*100).toFixed(0)+'% hit the target first, '+(ps*100).toFixed(0)+'% hit the stop first. Average result '+(ev>=0?'+':'')+ev.toFixed(2)+'R.');
     if(!(ev>0.05)){ok=false;if(!why)why='The odds are not in your favor.'}
     q=Math.min(maxLoss/rps,a.cash*.8/entry);q=Math.floor(q*1000)/1000;
     row('Budget',q>0?'ok':'no',q>0?q+' shares (about '+usd(q*entry)+'). Loss at the stop '+usd(q*rps)+', gain at the target '+usd(q*2*rps)+'.':'Not enough cash for this size.');
@@ -175,12 +172,11 @@ function compute(a){
   }else{row('Time Machine','wait','Not run yet. Earlier checks are not passed.');row('Budget','wait','Not sized yet.')}
   var g=[];
   if(a.pos)g.push('a position is already open');
-  if(a.trades.length>=2)g.push('2 trades done today');
-  if(a.dayPnl<=-a.limit)g.push('daily loss limit reached');
-  if(mins<585)g.push('before 9:45');
-  row('Risk',g.length?'no':'ok',g.length?'Blocked: '+g.join(', ')+'.':'Loss at the stop, reward to risk 2.0, daily limit, trade count and entry window are all within the rules.');
+  if(i-a.lastExit<COOL)g.push('pausing after the last trade');
+  if(recentPnl(a)<=-limit(a))g.push('recent losses hit the limit of '+usd(limit(a)));
+  row('Risk',g.length?'no':'ok',g.length?'Blocked: '+g.join(', ')+'.':'Loss at the stop, reward to risk 2.0, the rolling loss limit and the pause between trades are all within the rules.');
   if(g.length&&!a.pos){ok=false;if(!why)why=g[0].charAt(0).toUpperCase()+g[0].slice(1)+'.'}
-  return {rows:rows,ok:ok,wait:wait,why:why,go:ok&&!wait&&!a.pos&&q>0&&i<LAST,stop:stop,tgt:tgt,q:q,entry:entry,pt:pt,ps:ps,ev:ev,orH:orH,ma:ma};
+  return {rows:rows,ok:ok,wait:wait,why:why,go:ok&&!wait&&!a.pos&&q>0,stop:stop,tgt:tgt,q:q,entry:entry,pt:pt,ps:ps,ev:ev,rH:rH,ma:ma,blocked:g};
 }
 
 /* ---- trading ---- */
@@ -189,11 +185,12 @@ function open(a,q,entry,stop,tgt){
 }
 function finish(a,price,why,bot){
   var P=a.pos,fee=FEE*P.q*price,p=P.q*(price-P.entry)-P.fee-fee;
-  a.cash+=P.q*price-fee;a.dayPnl+=p;a.n++;if(p>0)a.wins++;
-  a.trades.push({t:clock(i),q:P.q,a:P.entry,b:price,w:why,p:p});
+  a.cash+=P.q*price-fee;a.n++;if(p>0)a.wins++;a.lastExit=i;
+  a.trades.push({i:i,q:P.q,a:P.entry,b:price,w:why,p:p});if(a.trades.length>40)a.trades.shift();
+  var res='<span class="'+cl(p)+'">'+(p>0?'profit ':'loss ')+usd(Math.abs(p))+'</span>';
   if(bot){a.marks.push({k:i,p:price,t:'sell'});
-    say(a,'<b>Sold '+P.q+' shares at $'+price.toFixed(2)+': <span class="'+cl(p)+'">'+(p>0?'profit ':'loss ')+usd(Math.abs(p))+'</span>.</b> Why: '+(why.indexOf('target')===0?'the price reached the target, so the plan says take the profit.':why.indexOf('stop')===0?'the price reached the stop, so the plan says get out and accept the small loss.':'it was time to be flat, so the plan closes the trade.'))}
-  else say(a,'<b>Sold '+P.q+' shares at $'+price.toFixed(2)+' ('+why+'): <span class="'+cl(p)+'">'+(p>0?'profit ':'loss ')+usd(Math.abs(p))+'</span></b>');
+    say(a,'<b>Sold '+P.q+' shares at $'+price.toFixed(2)+': '+res+'.</b> Why: '+(why.indexOf('target')===0?'the price reached the target, so the plan says take the profit.':why.indexOf('stop')===0?'the price reached the stop, so the plan says get out and accept the small loss.':'the trade went nowhere for '+HOLD+' candles, so the plan frees the cash.'))}
+  else say(a,'<b>Sold '+P.q+' shares at $'+price.toFixed(2)+' ('+why+'): '+res+'</b>');
   a.pos=null;
 }
 function manage(a,bot){
@@ -202,36 +199,24 @@ function manage(a,bot){
   else if(b.l<=P.stop)finish(a,P.stop,'stop',bot);
   else if(b.o>=P.tgt)finish(a,b.o,'target (gap)',bot);
   else if(b.h>=P.tgt)finish(a,P.tgt,'target',bot);
-  else if(clock(i)==='15:55'||i>=LAST)finish(a,b.c,i>=LAST?'end of day':'flat by 15:55',bot);
+  else if(i-P.k>=HOLD)finish(a,b.c,'time stop',bot);
 }
 function skillTick(){
   var A=compute(S);
   if(A.go){
     open(S,A.q,A.entry,A.stop,A.tgt);S.marks.push({k:i,p:A.entry,t:'buy'});S.last='';
-    say(S,'<b>Bought '+A.q+' shares at $'+A.entry.toFixed(2)+'.</b> Why: the chart is above its 20-candle average of $'+A.ma.toFixed(2)+' (Scanner). A candle closed above the opening range high of $'+A.orH.toFixed(2)+' (Entry timer). Stop $'+A.stop.toFixed(2)+' at the range midpoint, target $'+A.tgt.toFixed(2)+' at 2R (Exit planner). In 1,000 simulated finishes '+(A.pt*100).toFixed(0)+'% hit the target and '+(A.ps*100).toFixed(0)+'% hit the stop, average '+(A.ev>=0?'+':'')+A.ev.toFixed(2)+'R (Time Machine). Loss at the stop is '+usd(A.q*(A.entry-A.stop))+', inside the limit (Budget and Risk).');
-  }else if(!S.pos&&speed!=='max'&&A.why&&A.why!==S.last){
+    say(S,'<b>Bought '+A.q+' shares at $'+A.entry.toFixed(2)+'.</b> Why: the chart is above its 20-candle average of $'+A.ma.toFixed(2)+' (Scanner). This candle closed above the last '+RANGE+' candles\' high of $'+A.rH.toFixed(2)+' (Entry timer). Stop $'+A.stop.toFixed(2)+' in the middle of that range, target $'+A.tgt.toFixed(2)+' at 2R (Exit planner). In 1,000 simulated futures '+(A.pt*100).toFixed(0)+'% hit the target and '+(A.ps*100).toFixed(0)+'% hit the stop, average '+(A.ev>=0?'+':'')+A.ev.toFixed(2)+'R (Time Machine). Loss at the stop is '+usd(A.q*(A.entry-A.stop))+', inside the limit (Budget and Risk).');
+  }else if(!S.pos&&A.why&&A.why!==S.last){
     S.last=A.why;
-    if(!(S.seen[A.why]>=0&&i-S.seen[A.why]<12)){S.seen[A.why]=i;say(S,(A.wait&&A.ok?'WAIT. ':'SKIP. ')+A.why)}
+    if(!(S.seen[A.why]>=0&&i-S.seen[A.why]<15)){S.seen[A.why]=i;say(S,(A.wait&&A.ok?'WAIT. ':'SKIP. ')+A.why)}
   }
 }
 
-/* ---- days and the clock ---- */
-function newDay(){
-  day++;D=gen(day*7919+13);i=HIST;touched=false;
-  [H,S].forEach(function(a){a.trades=[];a.dayPnl=0;a.limit=2*cfg.lossPct/100*a.cash;a.marks=[];a.last='';a.seen={};
-    say(a,'Day '+day+' starts. Account '+usd(a.cash)+'.',true)});
-  var c=D[i].c;$('#stop').value=(c*0.996).toFixed(2);$('#tgt').value=(c*1.008).toFixed(2);
-}
-function endDay(){
-  [H,S].forEach(function(a){a.curve.push(a.cash);say(a,'Day '+day+' ends. Account '+usd(a.cash)+', day result <span class="'+cl(a.dayPnl)+'">'+money(a.dayPnl)+'</span>.',true)});
-  if(day>=MAXDAYS){finishRace('Stopped after '+MAXDAYS+' days. Nobody reached '+usd(cfg.goal)+'. You: '+usd(H.cash)+'. Skills: '+usd(S.cash)+'.');return}
-  newDay();
-}
+/* ---- the clock ---- */
 function goalCheck(){
   var h=eq(H)>=cfg.goal,s=eq(S)>=cfg.goal;
   if(!h&&!s)return;
-  var who=h&&s?'You and the skills both':h?'You':'The skills';
-  finishRace(who+' reached '+usd(cfg.goal)+' on day '+day+' at '+clock(i)+'. You: '+usd(eq(H))+'. Skills: '+usd(eq(S))+'. Days traded: '+day+'.');
+  finishRace((h&&s?'You and the skills both':h?'You':'The skills')+' reached '+usd(cfg.goal)+' at candle '+cn(i)+'. You: '+usd(eq(H))+'. Skills: '+usd(eq(S))+'.');
 }
 function finishRace(t){
   finished=true;halt();var b=$('#banner');b.style.display='block';b.textContent=t;
@@ -239,20 +224,16 @@ function finishRace(t){
 }
 function step(){
   if(finished||!D)return;
-  i++;var b=D[i];
+  i++;extend(i+1);var b=D[i];
   if(!H.pos&&!touched){$('#stop').value=(b.c*0.996).toFixed(2);$('#tgt').value=(b.c*1.008).toFixed(2)}
   manage(H,false);manage(S,true);skillTick();
+  if(cn(i)%10===0){H.curve.push(eq(H));S.curve.push(eq(S))}
   goalCheck();
-  if(!finished&&i>=LAST)endDay();
 }
 function halt(){clearTimeout(timer);timer=null;running=false;$('#pause').textContent='Resume'}
 function loop(){
   if(!running||finished)return;
-  if(speed==='max'){
-    var t0=Date.now(),n=0;
-    while(Date.now()-t0<14&&!finished){step();n++}
-    draw();timer=setTimeout(loop,0);
-  }else{step();draw();timer=setTimeout(loop,speed==='fast'?40:350)}
+  step();draw();timer=setTimeout(loop,speed==='fast'?60:400);
 }
 function go(){if(running||finished)return;running=true;$('#pause').textContent='Pause';loop()}
 
@@ -284,29 +265,28 @@ function draw(){
   var Q=S.pos;
   if(Q){[[Q.tgt,'skills target'],[Q.stop,'skills stop']].forEach(function(x){
     s+='<line x1="'+l+'" x2="'+(W-r)+'" y1="'+Y(x[0])+'" y2="'+Y(x[0])+'" stroke="var(--amber)" stroke-width="1" stroke-dasharray="2 4"/><text x="'+(W-r-4)+'" y="'+(Y(x[0])-4)+'" text-anchor="end" style="fill:var(--amber)">'+x[1]+'</text>'})}
+  S.marks=S.marks.filter(function(m){return m.k>=a0});
   S.marks.forEach(function(m){var k=m.k-a0;if(k<0||k>=sl.length)return;var x=l+k*cw+cw/2,y=Y(m.p);
     s+='<circle cx="'+x+'" cy="'+y+'" r="6" fill="var(--amber)" stroke="var(--paper)" stroke-width="1.5"/><text x="'+x+'" y="'+(m.t==='buy'?y+19:y-10)+'" text-anchor="middle" style="fill:var(--amber)">skills '+m.t+'</text>'});
-  [0,12,24,36,48,60].forEach(function(k){if(k<sl.length)s+='<text x="'+(l+k*cw+cw/2)+'" y="'+(H2-3)+'" text-anchor="middle">'+clock(a0+k)+'</text>'});
+  [0,12,24,36,48,60].forEach(function(k){if(k<sl.length)s+='<text x="'+(l+k*cw+cw/2)+'" y="'+(H2-3)+'" text-anchor="middle">'+lab(a0+k)+'</text>'});
   $('#ch').innerHTML=s;
-  var op=P?P.q*(cur.c-P.entry):0,mx=speed==='max';
-  $('#dayno').textContent=day;$('#cash').textContent=usd(eq(H));
+  var op=P?P.q*(cur.c-P.entry):0;
+  $('#cno').textContent=cn(i);$('#cash').textContent=usd(eq(H));
   $('#open').textContent=money(op);$('#open').className=cl(op);
-  $('#clk').textContent=clock(i);$('#px').textContent='$'+cur.c.toFixed(2);
+  $('#px').textContent='$'+cur.c.toFixed(2);
   $('#sstate').textContent=S.pos?'in a trade':'watching';
-  var mins=570+(i-HIST)*5,canBuy=!H.pos&&i<LAST&&mins>=585&&mins<=900&&!finished&&!mx;
-  $('#buy').disabled=!canBuy;$('#close').disabled=!H.pos||mx;
+  $('#buy').disabled=H.pos||finished||!running&&cn(i)<1;$('#close').disabled=!H.pos||finished;
   $('#next').disabled=running||finished;
-  vs();journal();
-  if(!mx)advise();
+  vs();journal();advise();
 }
 function vs(){
   var row=function(n,f){return '<tr><td>'+n+'</td><td>'+f(H)+'</td><td>'+f(S)+'</td></tr>'};
   var pr=function(a){var v=Math.max(0,Math.min(1,(Math.log(Math.max(eq(a),1))-Math.log(cfg.start))/(Math.log(cfg.goal)-Math.log(cfg.start))));return '<div class="prog" title="Progress on a log scale"><i style="width:'+(v*100)+'%;background:'+(a===H?'var(--steel)':'var(--amber)')+'"></i></div>'};
-  $('#cmp').innerHTML='<tr><th>Day '+day+'</th><th>You</th><th>Skills</th></tr>'+
+  $('#cmp').innerHTML='<tr><th>Candle '+cn(i)+'</th><th>You</th><th>Skills</th></tr>'+
    row('Account value',function(a){return '<b>'+usd(eq(a))+'</b>'})+
    row('Progress to '+usd(cfg.goal),pr)+
-   row('Today',function(a){var p=a.dayPnl+(a.pos?a.pos.q*(D[i].c-a.pos.entry):0);return '<span class="'+cl(p)+'">'+money(p)+'</span>'})+
-   row('Trades taken, all days',function(a){return a.n+(a.pos?1:0)})+
+   row('Profit or loss so far',function(a){var p=eq(a)-cfg.start;return '<span class="'+cl(p)+'">'+money(p)+'</span>'})+
+   row('Trades closed',function(a){return a.n})+
    row('Winning trades',function(a){return a.n?Math.round(a.wins/a.n*100)+'%':'-'});
   var W=900,Hh=200,l=64,r=12,t=10,b=22,N=Math.max(1,H.curve.length-1),all=H.curve.concat(S.curve);
   var lo=Math.min.apply(null,all)*.9,hi=Math.max(cfg.goal,Math.max.apply(null,all))*1.1;
@@ -316,31 +296,29 @@ function vs(){
   [[H,'var(--steel)'],[S,'var(--amber)']].forEach(function(x){
     var d=x[0].curve.map(function(v,k){return (k?'L':'M')+X(k).toFixed(1)+' '+Yy(v).toFixed(1)}).join('');
     s+='<path d="'+d+'" fill="none" stroke="'+x[1]+'" stroke-width="2" stroke-linejoin="round"/>'});
-  s+='<text x="'+l+'" y="'+(Hh-5)+'">day 0</text><text x="'+(W-r)+'" y="'+(Hh-5)+'" text-anchor="end">day '+(H.curve.length-1)+'</text>';
+  s+='<text x="'+l+'" y="'+(Hh-5)+'">candle 0</text><text x="'+(W-r)+'" y="'+(Hh-5)+'" text-anchor="end">candle '+(H.curve.length-1)*10+'</text>';
   $('#eq').innerHTML=s;
 }
-var jv=[-1,-1];
 function journal(){
-  if(jv[0]!==H.ver){jv[0]=H.ver;$('#jyou').innerHTML=H.journal.slice(0,150).join('')}
+  if(jv[0]!==H.ver){jv[0]=H.ver;$('#jyou').innerHTML=H.journal.slice(0,150).join('')||'<div>No trades yet. Buy when you see a setup.</div>'}
   if(jv[1]!==S.ver){jv[1]=S.ver;$('#jbot').innerHTML=S.journal.slice(0,150).join('')}
 }
 function advise(){
-  var A=compute(H),v=$('#verdict'),rows=A.rows;
-  $('#skills').innerHTML='<tr><th>Skill</th><th>Result</th><th>Why</th></tr>'+rows.map(function(r){return '<tr><td>'+r[0]+'</td><td class="'+(r[1]==='ok'?'up':r[1]==='no'?'down':'')+'"><b>'+(r[1]==='ok'?'Pass':r[1]==='no'?'Fail':'Wait')+'</b></td><td style="font-family:var(--text)">'+r[2]+'</td></tr>'}).join('')+
-    '<tr><td>Alerts</td><td class="'+(H.pos?'up':'')+'"><b>'+(H.pos?'Pass':'Wait')+'</b></td><td style="font-family:var(--text)">'+(H.pos?'Watching your trade: stop $'+H.pos.stop.toFixed(2)+', target $'+H.pos.tgt.toFixed(2)+'. Flat by 15:55.':'Will watch the stop, the target and the 15:55 close once you are in a trade.')+'</td></tr>';
+  var A=compute(H),v=$('#verdict');
+  $('#skills').innerHTML='<tr><th>Skill</th><th>Result</th><th>Why</th></tr>'+A.rows.map(function(r){return '<tr><td>'+r[0]+'</td><td class="'+(r[1]==='ok'?'up':r[1]==='no'?'down':'')+'"><b>'+(r[1]==='ok'?'Pass':r[1]==='no'?'Fail':'Wait')+'</b></td><td style="font-family:var(--text)">'+r[2]+'</td></tr>'}).join('')+
+    '<tr><td>Alerts</td><td class="'+(H.pos?'up':'')+'"><b>'+(H.pos?'Pass':'Wait')+'</b></td><td style="font-family:var(--text)">'+(H.pos?'Watching your trade: stop $'+H.pos.stop.toFixed(2)+', target $'+H.pos.tgt.toFixed(2)+', closes after '+HOLD+' candles ('+Math.max(0,HOLD-(i-H.pos.k))+' left).':'Will watch your stop, your target and the time limit once you are in a trade.')+'</td></tr>';
   AD=null;
   if(H.pos){v.textContent='You are in a trade. The skills are watching it.';v.className=''}
   else if(A.go){v.textContent='TAKE the trade now';v.className='up';AD=A}
   else if(A.wait&&A.ok){v.textContent='WAIT. '+A.why;v.className=''}
   else{v.textContent='SKIP. '+A.why;v.className='down'}
-  $('#take').disabled=!A.go||speed==='max'||finished;
+  $('#take').disabled=!A.go||finished;
   var c=D[i].c,st=parseFloat($('#stop').value),tg=parseFloat($('#tgt').value);
   if(H.pos)$('#size').textContent='In a trade. Your stop and target are fixed once you buy.';
   else if(!(st<c)||!(tg>c))$('#size').textContent='Stop must be below the price and target above it.';
   else{var q=Math.min(cfg.lossPct/100*H.cash/(c-st),H.cash*.8/c);q=Math.floor(q*1000)/1000;var rr=(tg-c)/(c-st);
     $('#size').textContent='If you buy now: '+q+' shares (about '+usd(q*c)+'), lose '+usd(q*(c-st))+' at the stop, gain '+usd(q*(tg-c))+' at the target. Reward to risk '+rr.toFixed(2)+(rr<1.5?'. Below 1.5, the pack would block this trade.':'.')}
 }
-var AD=null;
 
 /* ---- your clicks ---- */
 $('#buy').onclick=function(){
@@ -348,29 +326,30 @@ $('#buy').onclick=function(){
   if(!(st<c)||!(tg>c)){m.textContent='Fix your stop and target first.';return}
   var rr=(tg-c)/(c-st);
   if(rr<1.5){m.textContent='Blocked: reward to risk is '+rr.toFixed(2)+', the minimum is 1.5. Move the target up or the stop closer.';return}
-  if(H.dayPnl<=-H.limit){m.textContent='Blocked: daily loss limit of '+usd(H.limit)+' reached. Wait for the next day.';return}
-  if(H.trades.length>=2){m.textContent='Blocked: 2 trades a day is the limit. Wait for the next day.';return}
+  if(recentPnl(H)<=-limit(H)){m.textContent='Blocked: recent losses hit the limit of '+usd(limit(H))+'. Wait a while.';return}
+  if(i-H.lastExit<COOL){m.textContent='Blocked: pause for '+(COOL-(i-H.lastExit))+' more candle(s) after your last trade.';return}
   var q=Math.min(cfg.lossPct/100*H.cash/(c-st),H.cash*.8/c);q=Math.floor(q*1000)/1000;
   if(q<=0){m.textContent='Blocked: no room to size this trade.';return}
   open(H,q,c,st,tg);touched=true;
   say(H,'<b>Bought '+q+' shares at $'+c.toFixed(2)+'.</b> Stop $'+st.toFixed(2)+', target $'+tg.toFixed(2)+'.');
   m.textContent='Bought '+q+' shares at $'+c.toFixed(2)+'.';draw();
 };
-$('#close').onclick=function(){if(H.pos){finish(H,D[i].c,'you sold',false);$('#msg').textContent='You closed the trade.';draw();goalCheck()}};
+$('#close').onclick=function(){if(H.pos){finish(H,D[i].c,'you sold',false);touched=false;$('#msg').textContent='You closed the trade.';draw();goalCheck()}};
 $('#take').onclick=function(){if(AD&&!H.pos){$('#stop').value=AD.stop.toFixed(2);$('#tgt').value=AD.tgt.toFixed(2);touched=true;$('#buy').click()}};
 $('#stop').oninput=$('#tgt').oninput=function(){touched=true;if(D)advise()};
 $('#next').onclick=function(){step();draw()};
 $('#pause').onclick=function(){if(running){halt()}else{go()}};
-$('#speed').onchange=function(){speed=this.value;if(D)draw()};
+$('#speed').onchange=function(){speed=this.value};
 $('#start').onclick=function(){
   var c=parseFloat($('#startcash').value),g=parseFloat($('#goal').value),p=parseFloat($('#losspct').value),m=$('#msg');
   if(!(c>=5)){m.textContent='Starting cash must be at least $5.';return}
   if(!(g>c)||g>1e9){m.textContent='The goal must be above your starting cash and at most $1,000,000,000.';return}
   if(!(p>=0.1&&p<=10)){m.textContent='Max loss per trade must be between 0.1% and 10% of your cash.';return}
-  halt();cfg={start:c,goal:g,lossPct:p};finished=false;day=0;jv=[-1,-1];$('#banner').style.display='none';
-  speed=$('#speed').value;H=newAcct();S=newAcct();D=null;newDay();
+  halt();cfg={start:c,goal:g,lossPct:p};finished=false;jv=[-1,-1];touched=false;$('#banner').style.display='none';
+  speed=$('#speed').value;H=newAcct();S=newAcct();startChart();i=HIST-1;
+  var px=D[i].c;$('#stop').value=(px*0.996).toFixed(2);$('#tgt').value=(px*1.008).toFixed(2);
   $('#start').textContent='Restart with these settings';$('#pause').disabled=false;
-  m.textContent='Race started. You both have '+usd(c)+' and the goal is '+usd(g)+'. The skills are trading on their own. Buy when you see a setup.';
+  m.textContent='Race started. You both have '+usd(c)+' and the goal is '+usd(g)+'. The skills trade on their own. Buy by hand when you see a setup.';
   draw();go();
 };
 H=newAcct();S=newAcct();
