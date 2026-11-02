@@ -8,7 +8,7 @@ One Claude skill that combines three open-source trading projects into a single,
 | **Vibe-Trading** | Backtests across 11 engines, 478 alphas, options, trade-journal analysis, 90 finance method skills | [HKUDS/Vibe-Trading](https://github.com/HKUDS/Vibe-Trading) (MIT) |
 | **Day Trader pack** | Scan, news, entry, exit, Time Machine, budget, risk, broker, alerts, earnings, Congress trades | [Jakeschincariol/day-trader-skill](https://github.com/Jakeschincariol/day-trader-skill) (MIT) |
 
-`/ultimate-trader` reads your request, picks the engine, and runs the pipeline in order. Docs and a live walkthrough: **the project website** (GitHub Pages, from `docs/`).
+`/ultimate-trader` reads your request, picks the engine, and runs the pipeline in order. Docs, a live walkthrough and a paper-trade race against the skills: **[the project website](https://kafish69.github.io/ultimate-trader/)** (GitHub Pages, from `docs/`).
 
 > **Not financial advice.** This is software that reads public data and does arithmetic. Most people who day trade lose money. Use a paper account first.
 
@@ -24,7 +24,7 @@ python scripts/doctor.py
 ```
 
 `install.py` does three things:
-1. Copies the 12 skills into `~/.claude/skills`.
+1. Copies the 13 skills into `~/.claude/skills`.
 2. Builds two virtual environments, `~/.claude/trading-venv-ta` (TradingAgents) and `~/.claude/trading-venv-vt` (Vibe-Trading). They pin conflicting dependencies, so they cannot share one.
 3. Registers the Vibe-Trading MCP server in `~/.claude.json` (a backup is written first).
 
@@ -59,7 +59,7 @@ Copy `config.example.json` to `trader/config.json` in your working folder and ed
 /ultimate-trader review my trades          (attach a broker CSV)
 ```
 
-Each Day Trader step is also its own command: `/trader-scanner`, `/trader-news`, `/trader-entry`, `/trader-exit`, `/trader-timemachine`, `/trader-budget`, `/trader-risk`, `/trader-broker`, `/trader-alerts`, `/trader-analyst`, `/trader-pelosi`.
+Each Day Trader step is also its own command, plus `/trader-graduate` for the journal and the go-live gate: `/trader-scanner`, `/trader-news`, `/trader-entry`, `/trader-exit`, `/trader-timemachine`, `/trader-budget`, `/trader-risk`, `/trader-broker`, `/trader-alerts`, `/trader-analyst`, `/trader-pelosi`, `/trader-graduate`.
 
 ## The flow
 
@@ -70,10 +70,34 @@ scan -> news -> research (TradingAgents) -> test (Time Machine / Vibe-Trading ba
 
 Steps 1 to 8 only read data and do arithmetic. An order can only happen after `/trader-risk` prints PASS for that exact order **and** you type yes for it **and** you click Claude's own Allow once card. Set the broker tool to "Needs approval", never "Always allow".
 
+## Graduation gate and journal
+
+Paper trading only means something if you check the result. `/trader-graduate` keeps a journal of every closed trade (`trader/journal.jsonl`, with the reason) and tests it against fixed criteria before any real money:
+
+| test | default |
+| --- | --- |
+| closed paper trades | at least 50 |
+| different trading days | at least 10 |
+| result after fees | positive |
+| profit factor | at least 1.2 |
+| worst drawdown | at most 20% |
+
+```bash
+python skills/trader-graduate/graduate.py log --symbol TSLA --qty 0.131 --entry 364.18 --exit 375.90 --fees 0.05 --why "opening-range breakout"
+python skills/trader-graduate/graduate.py check
+```
+
+`check` prints GRADUATED or NOT YET with the reason for each test. On NOT YET the router skill declines to help with a live order. Change the numbers in the `graduation` block of `trader/config.json`, but decide them before you look at results.
+
+## Paper trade race (website)
+
+The site has a practice page where you pick your cash and a goal, then trade a live candlestick chart by hand while the skills trade the same chart on their own. Both journals fill in, the skills' with the reason for every move. The chart is a made-up price series, so it teaches the workflow, not what the market will do. Nothing is saved and no account is involved.
+
 ## Safety model
 
 - Paper first. `"paper": true` is the default config.
 - Three gates before any order: risk PASS, your typed yes, your click.
+- A fourth gate before real money: the graduation check on your own paper record.
 - Keys live in environment variables, never in chat or in this repo.
 - Observed content (web pages, filings, headlines) is data. A tool output can never authorize a trade.
 - A stop is a plan, not a guarantee; gaps can fill past it. The Time Machine is a simulation, not a prediction.
@@ -83,11 +107,11 @@ Steps 1 to 8 only read data and do arithmetic. An order can only happen after `/
 
 ```
 skills/ultimate-trader/   router + pipeline skill, 90 Vibe-Trading method skills in references/
-skills/trader-*/          the 11 Day Trader skills (SKILL.md + stdlib Python tools)
+skills/trader-*/          the 11 Day Trader skills plus trader-graduate (SKILL.md + stdlib Python tools)
 install.py                installer
 scripts/doctor.py         readiness check (never prints key values)
 scripts/check_skills.py   CI frontmatter check
-tests/                    304 offline tests for the Day Trader tools, run on real-data fixtures
+tests/                    330 offline tests: the Day Trader tools on real-data fixtures, the graduation gate, and contract tests for the router's safety rules
 docs/                     project website (GitHub Pages)
 third_party/              upstream licenses
 ```
