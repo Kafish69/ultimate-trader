@@ -9,11 +9,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400&display=swap">
 <style>
-/* Concept: railway interlocking. The trade is a line, the three safety checks are signals, and a signal stays red until you clear it.
+/* Minimal pass: more air, fewer boxes, one accent.
+   Concept: railway interlocking. The trade is a line, the three safety checks are signals, and a signal stays red until you clear it.
    Type: Bricolage Grotesque for headlines, IBM Plex Sans for text, Plex Mono only for commands.
    Colour: slate paper and ink, steel blue as the brand colour; green and red are reserved for go and stop. */
 :root{
-  --paper:#e9eef2; --panel:#f6f9fb; --ink:#10212f; --mute:#4f6376; --rule:#c2ced8; --code:#dce5ec;
+  --paper:#f7f8fa; --panel:#ffffff; --ink:#0f1b26; --mute:#5b6c7b; --rule:#e1e6eb; --code:#eef1f4;
   --steel:#2b5a8c; --go:#0f7f5a; --stop:#c3303a; --amber:#a96d12; --on-steel:#ffffff;
   --display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
   --text:'IBM Plex Sans','Segoe UI',system-ui,sans-serif;
@@ -30,7 +31,7 @@ html{scroll-behavior:smooth}
 body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.65 var(--text)}
 a{color:var(--steel)}
 code{font:14px var(--mono)}
-.wrap{max-width:1080px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+.wrap{max-width:980px;margin:0 auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
 :focus-visible{outline:3px solid var(--steel);outline-offset:2px}
 h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance}
 h2{font-weight:800;font-size:clamp(28px,4.2vw,42px);line-height:1.08;letter-spacing:-.02em}
@@ -39,25 +40,25 @@ p{margin:0}
 .mute{color:var(--mute)}
 
 /* bar */
-.bar{border-bottom:1px solid var(--rule)}
+.bar{position:sticky;top:0;z-index:5;background:color-mix(in srgb,var(--paper) 86%,transparent);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid var(--rule)}
 .bar .wrap{display:flex;align-items:center;gap:20px;min-height:60px;flex-wrap:wrap;padding-block:8px}
 .brand{font:800 20px var(--display);color:var(--ink);text-decoration:none;letter-spacing:-.01em}
 .bar nav{margin-left:auto;display:flex;gap:18px;flex-wrap:wrap}
 .bar nav a{color:var(--mute);text-decoration:none;font-size:15px;padding-block:6px}
 .bar nav a:hover{color:var(--ink)}
-.bar nav a.gh{color:var(--ink);font-weight:600;border-bottom:2px solid var(--steel)}
+.bar nav a.gh{color:var(--ink);font-weight:600}
 
 /* hero */
-.hero{padding-block:64px 56px}
-h1{font-weight:800;font-size:clamp(38px,7vw,76px);line-height:1;letter-spacing:-.035em;max-width:15ch}
-.hero .lede{font-size:20px;margin-top:22px;max-width:54ch;color:var(--mute)}
-.cmd{display:flex;margin-top:28px;max-width:640px;min-width:0}
-.cmd code{flex:1;min-width:0;overflow-x:auto;white-space:nowrap;background:var(--code);border:1px solid var(--rule);border-right:0;padding:13px 14px;border-radius:3px 0 0 3px}
-.cmd button{cursor:pointer;font:600 15px var(--text);color:var(--on-steel);background:var(--steel);border:0;padding:0 20px;border-radius:0 3px 3px 0;min-height:48px}
+.hero{padding-block:104px 96px}
+h1{font-weight:800;font-size:clamp(40px,7.4vw,84px);line-height:.98;letter-spacing:-.04em;max-width:13ch}
+.hero .lede{font-size:20px;margin-top:28px;max-width:46ch;color:var(--mute)}
+.cmd{display:flex;margin-top:36px;max-width:640px;min-width:0}
+.cmd code{flex:1;min-width:0;overflow-x:auto;white-space:nowrap;background:var(--code);border:1px solid var(--rule);border-right:0;padding:13px 16px;border-radius:10px 0 0 10px}
+.cmd button{cursor:pointer;font:600 15px var(--text);color:var(--on-steel);background:var(--steel);border:0;padding:0 22px;border-radius:0 10px 10px 0;min-height:48px}
 .cmd button:hover{filter:brightness(1.08)}
 
 /* the line (signature element) */
-.line{margin-top:56px;border:1px solid var(--rule);background:var(--panel);border-radius:3px;padding:28px 24px 24px}
+.line{margin-top:88px;background:var(--panel);border:1px solid var(--rule);border-radius:16px;padding:40px 36px 34px;box-shadow:0 30px 60px -40px rgba(15,27,38,.28)}
 .line h2{font-size:22px;letter-spacing:-.01em}
 .line .sub{color:var(--mute);margin-top:4px;font-size:15px;max-width:60ch}
 .track{position:relative;margin:54px 0 0;height:84px}
@@ -74,26 +75,27 @@ h1{font-weight:800;font-size:clamp(38px,7vw,76px);line-height:1;letter-spacing:-
 .nodes li.reached .lamp{border-color:var(--steel)}
 .token{position:absolute;top:-26px;left:10%;width:26px;height:26px;margin-left:-13px;background:var(--steel);border-radius:3px;z-index:2;transition:left .5s ease;display:grid;place-items:center;color:var(--on-steel);font:600 11px var(--text)}
 .switches{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:20px}
-.sw{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border:1px solid var(--rule);border-radius:3px;cursor:pointer;background:var(--paper);min-width:0}
+.sw{display:flex;gap:10px;align-items:flex-start;padding:14px 16px;border:1px solid var(--rule);border-radius:12px;cursor:pointer;background:var(--paper);min-width:0}
 .sw input{margin-top:5px;width:18px;height:18px;accent-color:var(--go);flex:none}
 .sw b{display:block;font-size:15px}
 .sw span{font-size:13.5px;color:var(--mute);line-height:1.4;display:block}
 .go-row{display:flex;gap:16px;align-items:center;margin-top:16px;flex-wrap:wrap}
-.send{cursor:pointer;font:600 16px var(--text);background:var(--ink);color:var(--paper);border:0;padding:12px 22px;border-radius:3px}
+.send{cursor:pointer;font:600 16px var(--text);background:var(--ink);color:var(--paper);border:0;padding:13px 26px;border-radius:99px}
 .send:hover{filter:brightness(1.2)}
 .result{font-size:16px;min-height:1.65em}
 .result strong{font-weight:600}
 .result.ok{color:var(--go)} .result.stop{color:var(--stop)}
 
 /* sections */
-section{padding-block:72px;border-top:1px solid var(--rule)}
-section>.wrap>.intro{margin-bottom:36px}
+section{padding-block:120px 8px;border-top:0}
+section:last-of-type{padding-bottom:40px}
+section>.wrap>.intro{margin-bottom:48px}
 section .intro p{margin-top:12px;color:var(--mute);max-width:60ch}
 
 /* engines */
 .eng{border-top:1px solid var(--rule)}
 .eng:last-child{border-bottom:1px solid var(--rule)}
-.eng .row{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:8px 40px;padding:26px 0}
+.eng .row{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:8px 40px;padding:34px 0}
 .eng h3{font-weight:800;font-size:28px;letter-spacing:-.02em;line-height:1.1}
 .eng .role{color:var(--mute);margin-top:6px;font-size:15px}
 .eng p{max-width:56ch}
@@ -110,7 +112,7 @@ section .intro p{margin-top:12px;color:var(--mute);max-width:60ch}
 .stops .n{font:400 13px var(--mono);color:var(--mute);width:22px;flex:none}
 .stops .gatemark{margin-left:auto;font-size:12.5px;font-weight:600;color:var(--stop);border:1px solid var(--stop);padding:1px 8px;border-radius:99px}
 .stops button:focus-visible{outline:3px solid var(--steel);outline-offset:-3px}
-.detail{background:var(--panel);border:1px solid var(--rule);border-radius:3px;padding:28px;position:sticky;top:16px}
+.detail{background:var(--panel);border:1px solid var(--rule);border-radius:16px;padding:32px;position:sticky;top:16px}
 .detail h3{font-weight:800;font-size:26px;letter-spacing:-.015em}
 .detail .who{color:var(--mute);font-size:15px;margin-top:2px}
 .detail p.what{margin-top:14px;max-width:58ch}
@@ -119,13 +121,13 @@ section .intro p{margin-top:12px;color:var(--mute);max-width:60ch}
 .detail dd{margin:0}
 
 /* lab */
-a.cta{display:inline-block;background:var(--steel);color:var(--on-steel);font-weight:600;text-decoration:none;padding:10px 18px;border-radius:3px}
+a.cta{display:inline-block;background:var(--ink);color:var(--paper);font-weight:600;text-decoration:none;padding:13px 26px;border-radius:99px}
 a.cta:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
 .lab{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px}
 .fields{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 label{display:grid;gap:5px;font-size:14px;color:var(--mute)}
 input[type=number],select{font:16px var(--text);padding:10px 12px;border:1px solid var(--rule);border-radius:3px;background:var(--panel);color:var(--ink);width:100%}
-.out{background:var(--panel);border:1px solid var(--rule);border-radius:3px;padding:24px;min-width:0}
+.out{background:var(--panel);border:1px solid var(--rule);border-radius:16px;padding:28px;min-width:0}
 .shares{font:800 52px/1 var(--display);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
 .shares small{font:400 15px var(--text);color:var(--mute);letter-spacing:0;margin-left:8px}
 .kv{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--rule);font-variant-numeric:tabular-nums;font-size:15px}
@@ -146,7 +148,7 @@ input[type=number],select{font:16px var(--text);padding:10px 12px;border:1px sol
 
 /* install */
 .steps{list-style:none;counter-reset:s;margin:0;padding:0;display:grid;gap:0;border-top:1px solid var(--rule)}
-.steps li{counter-increment:s;display:grid;grid-template-columns:56px minmax(0,1fr);gap:0 16px;padding:24px 0;border-bottom:1px solid var(--rule)}
+.steps li{counter-increment:s;display:grid;grid-template-columns:56px minmax(0,1fr);gap:0 16px;padding:30px 0;border-bottom:1px solid var(--rule)}
 .steps li::before{content:counter(s);font:800 34px/1 var(--display);color:var(--steel)}
 .steps h3{font-weight:800;font-size:21px}
 .steps p{color:var(--mute);margin-top:6px;max-width:58ch}
@@ -180,29 +182,32 @@ footer strong{color:var(--ink)}
   .lab{grid-template-columns:minmax(0,1fr)}
   .switches{grid-template-columns:minmax(0,1fr)}
   .line{padding:22px 14px}
-  .hero{padding-top:40px}
+  .hero{padding-top:56px;padding-bottom:64px}
+  section{padding-top:80px}
+  .line{padding:26px 16px 24px;margin-top:56px}
   .lamp{width:42px;height:42px}
   .rail{top:19px}.token{top:-26px}
   .nodes li{font-size:12.5px}
 }
+@media(max-width:560px){.bar .wrap{gap:4px 14px;min-height:0}.bar nav{margin-left:0;gap:4px 14px}.bar nav a{font-size:14px}.bar{position:static}}
 @media(prefers-reduced-motion:reduce){.rail i,.token,.lamp{transition:none}}
 </style>
 </head>
 <body>
 <header class="bar"><div class="wrap">
   <a class="brand" href="#top">Ultimate Trader</a>
-  <nav aria-label="Sections"><a href="#engines">Engines</a><a href="#route">Route</a><a href="#lab">Size a trade</a><a href="paper.html">Paper race</a><a href="#install">Install</a><a href="#faq">FAQ</a><a class="gh" href="https://github.com/Kafish69/ultimate-trader">GitHub</a></nav>
+  <nav aria-label="Sections"><a href="#route">How it works</a><a href="#lab">Try it</a><a href="paper.html">Paper race</a><a href="#install">Install</a><a class="gh" href="https://github.com/Kafish69/ultimate-trader">GitHub</a></nav>
 </div></header>
 
 <main id="top">
 <div class="wrap hero">
   <h1>Nothing reaches your broker until three signals are green.</h1>
-  <p class="lede">Ultimate Trader is a Claude skill that runs TradingAgents, Vibe-Trading and the Day Trader pack as one workflow: research the idea, test the odds, size the trade, check the risk, then ask you. It trades on a paper account by default.</p>
+  <p class="lede">A Claude skill that turns three trading projects into one careful workflow: research, test, size, check, then ask you. Paper account by default.</p>
   <div class="cmd"><code id="inst">git clone https://github.com/Kafish69/ultimate-trader &amp;&amp; cd ultimate-trader &amp;&amp; python install.py</code><button type="button" data-copy="#inst">Copy</button></div>
 
   <div class="line" id="line">
     <h2>Try to send an order</h2>
-    <p class="sub">This is the last stretch of every trade. Flip the checks and press send. The order stops at the first red signal.</p>
+    <p class="sub">The last stretch of every trade. Flip the checks, press send, and the order stops at the first red signal.</p>
     <div class="track" aria-hidden="true">
       <div class="rail"><i id="fill"></i></div>
       <ol class="nodes">
@@ -224,23 +229,20 @@ footer strong{color:var(--ink)}
 </div>
 
 <section id="engines"><div class="wrap">
-  <div class="intro"><h2>Three engines, each good at one job</h2><p>Ask in plain words. The skill picks the engine that fits and passes the result to the next stage.</p></div>
+  <div class="intro"><h2>Three engines. One job each.</h2></div>
   <div class="eng"><div class="row"><div><h3>TradingAgents</h3><p class="role">Research for swing trades and longer</p></div>
     <div><p>A team of AI analysts covers fundamentals, news, sentiment and the chart. A bull researcher and a bear researcher argue, a risk panel pushes back, and a portfolio manager gives the final rating.</p>
-    <ul><li>Any Yahoo ticker, such as NVDA, 0700.HK or BTC-USD</li><li>Needs one LLM key, set as an environment variable</li><li>Saves a markdown report and an HTML page</li></ul>
     <a class="src" href="https://github.com/TauricResearch/TradingAgents">TauricResearch/TradingAgents, Apache-2.0</a></div></div></div>
   <div class="eng"><div class="row"><div><h3>Vibe-Trading</h3><p class="role">Backtests, factors and your own habits</p></div>
     <div><p>Tests a rule over past data with costs, from 11 backtest engines and 29 data sources. It also holds 478 ready-made alphas, prices options, and reads your broker export to show where you chase, overtrade or hold losers.</p>
-    <ul><li>Free data for US, Hong Kong and crypto</li><li>Runs inside Claude as an MCP server</li><li>90 finance method skills, read only when needed</li></ul>
     <a class="src" href="https://github.com/HKUDS/Vibe-Trading">HKUDS/Vibe-Trading, MIT</a></div></div></div>
   <div class="eng"><div class="row"><div><h3>Day Trader pack</h3><p class="role">The intraday trade, start to finish</p></div>
     <div><p>Eleven skills scan thousands of charts, watch the news, time the entry, set the stop and target, replay the odds 10,000 times, size the position, check the risk and hand an approved order to your broker.</p>
-    <ul><li>Plain Python, no API key, free public data</li><li>Alerts for your stop, your target and the closing bell</li><li>Earnings summaries and Congress trade filings</li></ul>
     <a class="src" href="https://github.com/Jakeschincariol/day-trader-skill">Jakeschincariol/day-trader-skill, MIT</a></div></div></div>
 </div></section>
 
 <section id="route"><div class="wrap">
-  <div class="intro"><h2>The route a trade takes</h2><p>Each stop reads the file the one before it wrote. Choose a stop to see what it does. The marked stops are gates: the trade ends there unless they pass.</p></div>
+  <div class="intro"><h2>The route a trade takes</h2><p>Pick a stop to see what it does. Marked stops are gates: the trade ends there unless they pass.</p></div>
   <div class="route">
     <ol class="stops" id="stops"></ol>
     <div class="detail" id="detail" aria-live="polite"></div>
@@ -248,38 +250,37 @@ footer strong{color:var(--ink)}
 </div></section>
 
 <section id="lab"><div class="wrap">
-  <div class="intro"><h2>Size a trade the way the skill does</h2><p>The starting numbers are a $60 account with a $2 loss limit, and a TSLA entry with a stop at the opening-range midpoint and a 2R target. Change anything and watch the verdict. Try a target of 366 to see a block.</p></div>
+  <div class="intro"><h2>Size a trade like the skill does</h2><p>A $60 account, a $2 loss limit and a TSLA entry. Change anything and watch the verdict. Try a target of 366 to see a block.</p></div>
   <div class="lab">
     <div><div class="fields" id="fields"></div>
       <p class="fine">Fixed limits: position up to 80% of budget, order up to $48, 5% cash kept back, reward to risk at least 1.5, daily loss $4, 2 trades a day.</p></div>
     <div class="out" id="labout"></div>
   </div>
 
-  <div class="intro" style="margin-top:64px"><h2>What the trade could make or lose</h2><p>This takes the trade you just sized and shows the money. Set where you might exit, your win rate and how much the stock usually moves in a day. It then plays the rest of the session 10,000 times.</p></div>
+  <div class="intro" style="margin-top:64px"><h2>What it could make or lose</h2><p>The trade you just sized, in money, then played 10,000 times.</p></div>
   <div class="lab" id="sim">
     <div><div class="fields" id="simfields"></div>
       <p class="fine">The 10,000 sessions here are a random walk, not the real Time Machine. The real one replays the stock's own recent 5-minute bars on your computer (/trader-timemachine). Use this to feel the shape of the odds, then run the real one.</p></div>
     <div class="out" id="simout"></div>
   </div>
 
-  <div class="intro" style="margin-top:64px"><h2>Race the skills on a live chart</h2><p>Pick your cash and a goal. You trade by hand while the skills trade on their own, on the same live candles, and both journals fill in as you go.</p>
+  <div class="intro" style="margin-top:64px"><h2>Race the skills</h2><p>Pick your cash and a goal. You trade by hand, the skills trade on their own, on the same live chart. Both journals fill in.</p>
     <p><a class="cta" href="paper.html">Open the paper trade race</a></p></div>
 </div></section>
 
 <section id="install"><div class="wrap">
-  <div class="intro"><h2>Install</h2><p>You need Python 3.11 or newer and Claude Code. Everything stays on your machine. The installer backs up your Claude config before it changes it.</p></div>
+  <div class="intro"><h2>Install</h2><p>Python 3.11 or newer and Claude Code. Everything stays on your machine.</p></div>
   <ol class="steps">
-    <li><div><h3>Run the installer</h3><p>It copies the 13 skills, builds two Python environments (TradingAgents and Vibe-Trading need different library versions) and registers the Vibe-Trading MCP server.</p>
+    <li><div><h3>Run the installer</h3><p>Copies the 13 skills, builds two Python environments and registers the Vibe-Trading MCP server. Your Claude config is backed up first.</p>
       <div class="cmd"><code id="c1">python install.py</code><button type="button" data-copy="#c1">Copy</button></div></div></li>
-    <li><div><h3>Put your keys in environment variables</h3><p>One LLM key for TradingAgents, and Alpaca paper keys for the broker step. Never paste keys into a chat. Reopen your terminal afterwards.</p>
+    <li><div><h3>Put your keys in environment variables</h3><p>One LLM key, and Alpaca paper keys for the broker step. Never paste keys into a chat.</p>
       <div class="cmd"><code id="c2">setx ANTHROPIC_API_KEY "..."</code><button type="button" data-copy="#c2">Copy</button></div>
       <div class="cmd" style="margin-top:8px"><code id="c2b">setx ALPACA_API_KEY "PK..." &amp;&amp; setx ALPACA_SECRET_KEY "..."</code><button type="button" data-copy="#c2b">Copy</button></div></div></li>
-    <li><div><h3>Check it, restart Claude Code, ask</h3><p>The doctor reports OK, WARN or FAIL for each piece and never prints a key. Then try the first command below.</p>
+    <li><div><h3>Check it, restart Claude Code, ask</h3><p>The doctor reports OK, WARN or FAIL for each piece and never prints a key.</p>
       <div class="cmd"><code id="c3">python scripts/doctor.py</code><button type="button" data-copy="#c3">Copy</button></div></div></li>
   </ol>
-  <p class="fine">Set your own limits by copying config.example.json to trader/config.json. For the broker, add Alpaca's official MCP server in paper mode; /trader-broker walks you through it.</p>
 
-  <div class="intro" style="margin-top:56px"><h2>What to type</h2></div>
+  <div class="intro" style="margin-top:88px"><h2>What to type</h2></div>
   <div class="tablewrap"><table>
     <thead><tr><th>You want</th><th>Type in Claude</th><th>Engine</th></tr></thead>
     <tbody>
@@ -287,22 +288,16 @@ footer strong{color:var(--ink)}
     <tr><td>A day trade today</td><td><code>/ultimate-trader find me a day trade, $60, $2 max loss, paper</code></td><td>All three</td></tr>
     <tr><td>To test a strategy</td><td><code>/ultimate-trader backtest 20/50 SMA on AAPL 2022-2025 with costs</code></td><td>Vibe-Trading</td></tr>
     <tr><td>To review your habits</td><td><code>/ultimate-trader review my trades</code> with a broker CSV</td><td>Vibe-Trading</td></tr>
-    <tr><td>Setups to look at</td><td><code>/trader-scanner</code></td><td>Day Trader pack</td></tr>
-    <tr><td>The odds of a setup</td><td><code>/trader-timemachine</code></td><td>Day Trader pack</td></tr>
-    <tr><td>How many shares</td><td><code>/trader-budget</code></td><td>Day Trader pack</td></tr>
-    <tr><td>Whether it is allowed</td><td><code>/trader-risk</code></td><td>Day Trader pack</td></tr>
-    <tr><td>To place the paper order</td><td><code>/trader-broker</code></td><td>Day Trader pack</td></tr>
-    <tr><td>Earnings or Congress trades</td><td><code>/trader-analyst</code> or <code>/trader-pelosi</code></td><td>Day Trader pack</td></tr>
+    <tr><td>One step alone</td><td><code>/trader-scanner</code> <code>/trader-timemachine</code> <code>/trader-budget</code> <code>/trader-risk</code> <code>/trader-broker</code></td><td>Day Trader pack</td></tr>
+    <tr><td>To log a trade or go live</td><td><code>/trader-graduate</code></td><td>Graduation gate</td></tr>
     </tbody>
   </table></div>
 </div></section>
 
 <section id="faq"><div class="wrap">
   <div class="intro"><h2>Questions</h2></div>
-  <details><summary>Does it trade real money?</summary><p>Not unless you change it. The config ships with paper trading on, and Alpaca's server defaults to the paper account. Going live is a deliberate change you make yourself, and every order still needs the three signals.</p></details>
-  <details><summary>Can Claude place a trade on its own?</summary><p>No. Only the broker step can lead to an order. It needs a risk PASS for that exact order, your typed yes, and your click on Claude's permission card.</p></details>
-  <details><summary>Why two Python environments?</summary><p>TradingAgents and Vibe-Trading pin different versions of shared libraries, so pip cannot install them together. Each gets its own environment, and the installer manages both.</p></details>
-  <details><summary>Does it work with $60?</summary><p>Yes, with fractional shares and a small loss limit, which is what the default config sets. Spreads and costs weigh more on a small account, so treat it as a place to learn.</p></details>
+  <details><summary>Does it trade real money?</summary><p>Not unless you change it. Paper trading is on by default. Going live is a deliberate change, it has to pass the graduation check on your own paper record, and every order still needs the three signals. Claude cannot place one on its own.</p></details>
+      <details><summary>Does it work with $60?</summary><p>Yes, with fractional shares and a small loss limit, which is what the default config sets. Spreads and costs weigh more on a small account, so treat it as a place to learn.</p></details>
   <details><summary>How accurate are the predictions?</summary><p>There are none. The Time Machine simulates a stock's recent bars, and a backtest describes the past. Odds close to a coin flip mean you pass. A history of fewer than about 30 trades is an anecdote.</p></details>
   <details><summary>Where does the data come from?</summary><p>Free, unofficial sources: Yahoo Finance charts, Nasdaq Trader symbol lists, SEC EDGAR and the House Clerk. They can lag or rate-limit. Check price-critical numbers with your broker.</p></details>
 </div></section>
